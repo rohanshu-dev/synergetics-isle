@@ -164,12 +164,22 @@ title: Ask Synergetics
 </style>
 
 <script>
-(function() {
+(function init() {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+    return;
+  }
+
   const WORKER_URL = "https://synergetics-worker.rohanshu.workers.dev";
 
   const messagesEl = document.getElementById("chat-messages");
   const inputEl    = document.getElementById("chat-input");
   const sendBtn    = document.getElementById("chat-send");
+
+  if (!messagesEl || !inputEl || !sendBtn) {
+    setTimeout(init, 100);
+    return;
+  }
 
   function addMessage(role, text, streaming) {
     const wrap = document.createElement("div");
