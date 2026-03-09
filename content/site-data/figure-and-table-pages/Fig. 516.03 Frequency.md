@@ -1,0 +1,3 @@
+![[Fig. 516.03.png]]
+
+Fig. 516.03 Frequency: A square of any frequency is topologically equivalent to two adjacent triangles of corresponding frequency, i.e. a square has the same number of vertexes as two adjacent triangles (A). When the central sphere is removed from the vector equilibrium (B), it contracts symmetrically to a more compact arrangement (C), which is the icosahedron. The vector equilibrium has eight triangular faces and six square faces. The six square faces shift to become 12 triangular faces: 12+8=20 triangular faces of the icosahedron. Outer shells of the vector equilibrium and icosahedron of the same frequency will always have the same number of vertexes or spheres (D). Therefore the equation 10F2 + 2 applies to both figures.

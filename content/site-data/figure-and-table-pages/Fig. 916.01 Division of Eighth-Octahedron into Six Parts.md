@@ -1,0 +1,4 @@
+![[Fig. 916.01.png]]
+
+
+Fig. 916.01 Division of Eighth-Octahedron into Six Parts: B Quanta Module: The regular octahedron (A) is divided into eight identical units (B) equaling 1/8 of the volume of the octahedron. The quarter tetrahedron as defined by six A Modules (C) is subtracted from the 1/8-octahedron (D). This fractional unit is then subdivided into six identical irregular tetrahedra that appear as three right-hand and three left-hand units and are referred to as B Modules. They are equal in volume to the A Modules and are consequently also 1/24th of the regular tetrahedron. In (F) is shown the plane net which will fold into either the right or left B Module. Vertex A is at the vertex of the octahedron. Vertex C is at the mid-edge of the octahedron. Vertex E is at the center of gravity of the octahedron.

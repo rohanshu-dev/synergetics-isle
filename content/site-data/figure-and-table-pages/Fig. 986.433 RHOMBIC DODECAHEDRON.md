@@ -1,0 +1,3 @@
+![[RHOMBIC DODECAHEDRON.png]]
+
+RHOMBIC DODECAHEDRON (See [[color plate 25]])

@@ -1,0 +1,1 @@
+- turned on hardlinebreaks plugin in config.ts file. simple.

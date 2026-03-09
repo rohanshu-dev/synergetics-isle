@@ -1,0 +1,2 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-2 10 194 134" width="1em" height="1em" fill="currentColor" stroke="currentColor" stroke-width="7" stroke-linejoin="miter" aria-label="Vector Equilibrium" role="img" style="display:inline;vertical-align:-0.15em;flex-shrink:0"><path d="M 4 16 L 16 16 L 64 144 L 52 144 Z"/><path d="M 98 16 L 110 16 L 70 144 L 58 144 Z"/><path d="M 110 16 L 186 16 L 182.4 27.4 L 106.4 27.4 Z"/><path d="M 91.8 74 L 138.8 74 L 135.2 85.4 L 88.2 85.4 Z"/><path d="M 73.8 132 L 149.8 132 L 146.2 143.4 L 70.2 143.4 Z"/></svg>
+

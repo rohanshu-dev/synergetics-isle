@@ -1,0 +1,3 @@
+![[Fig. 730.11.png]]
+
+Fig. 730.11 Functions of Positive and Negative Tetrahedra in Tensegrity Stacked Cubes: Every cube has six faces (A). Every tetrahedron has six edges (B). Every cube has eight corners and every tetrahedron has four corners. Every cube contains two tetrahedra (ABCD and WXYZ) because each of its six faces has two diagonals, the positive and negative set. These may be called the symmetrically juxtaposed positive and negative tetrahedra whose centers of gravity are congruent with one another as well as congruent with the center of gravity of the cube (C). It is possible to stack cubes (D) into two columns. One column contains the positive tetrahedra (E) and the other contains the negative tetrahedra (F).

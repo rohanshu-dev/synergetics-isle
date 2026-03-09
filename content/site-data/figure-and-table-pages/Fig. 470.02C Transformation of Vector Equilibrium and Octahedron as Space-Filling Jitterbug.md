@@ -1,0 +1,3 @@
+![[Fig. 470.02C.png]]
+
+Fig. 470.02C Transformation of Vector Equilibrium and Octahedron as Space-Filling Jitterbug: Because the vector equilibrium and the octahedron will fill space, it is possible to envision a space- filling "jitterbug" transformation. If we combine vector equilibrium on their square faces in a space- filling "jitterbug" arrangement, the triangular faces form octahedral voids (1). As the vector equilibria contract, just as in the single "jitterbug," they transform through the icosahedron phase (3) and end at the octahedron phase (5).

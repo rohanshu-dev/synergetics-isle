@@ -1,0 +1,3 @@
+![[Fig 987.137B.png]]
+
+Fig 987.137B Composite of Primary and Secondary Vector Equilibrium Great Circle Sets: This is a black-and-white version of color plate 16. The Basic Equilibrium 48 LCD triangle as presented at [[Fig. 453.01]] appears here shaded in the spherical grid. In this composite vector equilibrium spherical matrix all the 25 primary great circles appear together with the four sets of secondary great circles. (The four sets of secondary vector equilibrium great circles are shown successively at color plates 12-15.)

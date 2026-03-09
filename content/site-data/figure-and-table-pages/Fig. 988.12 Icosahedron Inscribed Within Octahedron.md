@@ -1,0 +1,3 @@
+![[Fig. 988.12.png]]
+
+Fig. 988.12 Icosahedron Inscribed Within Octahedron: The four-frequency tetrahedron inscribes an internal octahedron within which may be inscribed a skew icosahedron. Of the icosahedron's 20 equiangular triangle faces, four are congruent with the plane of the tetra's faces (and with four external faces of the inscribed octahedron). Four of the icosahedron's other faces are congruent with the remaining four internal faces of the icosahedron. Two-fifths of the icosa faces are congruent with the octa faces. It requires 24 S Quanta Modules to fill in the void between the octa and the icosa.

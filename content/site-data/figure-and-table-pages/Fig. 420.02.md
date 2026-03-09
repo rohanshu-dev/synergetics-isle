@@ -1,0 +1,4 @@
+![[Fig. 420.02.png]]
+
+
+When the centers of equiradius spheres in closest packing are joined with lines, an isotropic vector matrix is formed. This constitutes an array of equilateral triangles which is seen as the comprehensive coordination frame of reference of nature's most economical, most comfortable structural interrelationships employing 60-degree association and disassociation. This provides an omnirational accounting system which, if arbitrarily accounted on a 90-degree basis, becomes inherently irrational. The isotropic vector matrix demonstrates the capability of accommodating all symmetrically and asymmetrically terminaled, high-frequency energy vectors of any structural shaping

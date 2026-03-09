@@ -1,0 +1,3 @@
+![[Fig. 936.19.png]]
+
+Fig. 936.19 Tetrahedral Quantum is Lost and Reappears in Transformation between Octahedron and Three-tetra-arc Tetrahelix: This transformation has the precessional effect of rearranging the energy vectors from 4-tetravolumes to 3-tetravolumes and reverse. The neutral symmetric octahedron rearranges itself into an asymmetric embryonic wave pattern. The four-membered individual-link continuity is a potential electromagnetic-circuitry gap closer. The furthermost ends of the tetra-arc group are alternatively vacant. (See also color plate 6.)

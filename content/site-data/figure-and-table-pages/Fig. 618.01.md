@@ -1,0 +1,3 @@
+![[Fig. 618.01.png]]
+
+Fig. 618.01: The tetrahedron would have to turn itself completely inside out (A), and as this constitutes a complete change in the entire structure (with no localized effect in evidence) the tetrahedron clearly has the greatest resistance of any structure to externally applied concentrated load. The octahedron dimples in on itself (B), and the icosahedron (C), although dimpling locally, does reduce its volume considerably when doing so, implying that it still has good resistance to concentrated load. The geodesic spheres (D and E) exhibit "very local" dimpling as the frequency increases, suggesting much less resistance to concentrated loads but very high resistance to distributed loads

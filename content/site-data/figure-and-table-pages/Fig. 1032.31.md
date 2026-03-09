@@ -1,0 +1,3 @@
+![[Fig. 1032.31.png]]
+
+Fig. 1032.31 Concave Octahedra and Concave Vector Equilibria Define Spherical Voids and Energy Trajectories: "Concave octahedra" and "concave vector equilibria" pack together to define the voids of an array of close-packed spheres which in conjunction with the convex spherical vector equilibria fill allspace. This array suggests how energy trajectories may be distributed through great-circle geodesic arcs from one sphere to another always passing through the vertexes of the array, which are the vertexes of the vector equilibria and the points where the spheres touch each other.
