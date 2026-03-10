@@ -5,16 +5,6 @@ title: Buckminster Fuller's Synergetics
 
 # The website is in Alpha. Feel free to roam around.
 
-
-![[About Website]]
-
-
-![[Website Roadmap]]
-
-
-![[Website Status]]
-
-
 ![[Copyright]]
 
 
