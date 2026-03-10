@@ -5,11 +5,16 @@ import * as Component from "./quartz/components"
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [],
-  afterBody: [],
+  afterBody: [
+    Component.ConditionalRender({
+      component: Component.SynergeticsAI(),
+      condition: (page) => page.fileData.slug === "synergetics-ai",
+    }),
+  ],
   footer: Component.Footer({
     links: {
-      GitHub: "https://github.com/jackyzha0/quartz",
-      "Discord Community": "https://discord.gg/cRFFHYye7t",
+      GitHub: "",
+      "Discord Community": "",
     },
   }),
 }
@@ -30,15 +35,19 @@ export const defaultContentPageLayout: PageLayout = {
     Component.MobileOnly(Component.Spacer()),
     Component.Flex({
       components: [
+
         {
           Component: Component.Search(),
           grow: true,
         },
+        { Component: Component.AIButton() },
         { Component: Component.Darkmode() },
-        { Component: Component.ReaderMode() },
+        //{ Component: Component.ReaderMode() },
       ],
     }),
-    Component.Explorer(),
+Component.Explorer({
+  filterFn: (node) => !(node as any).data?.tags?.includes("unlisted"),
+}),
   ],
   right: [
     Component.Graph(),
@@ -62,7 +71,9 @@ export const defaultListPageLayout: PageLayout = {
         { Component: Component.Darkmode() },
       ],
     }),
-    Component.Explorer(),
+Component.Explorer({
+  filterFn: (node) => !(node as any).data?.tags?.includes("unlisted"),
+}),
   ],
   right: [],
 }

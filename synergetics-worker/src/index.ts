@@ -1,20 +1,26 @@
-const SYSTEM_PROMPT = `You are a guide to Buckminster Fuller's Synergetics — one of the most unusual and rewarding books ever written. You have read every page.
+// ============================================================
+// SYNERGETICS ISLE — AI WORKER
+// Pipeline: Query Rewrite → Embed & Retrieve → Rerank → Generate
+// ============================================================
 
-When answering, draw directly from the indexed text. Be precise about concepts like tensegrity, synergy, vector equilibrium, ephemeralization, and Fuller's geometric thinking. Use his terminology correctly.
+// --- MODELS -------------------------------------------------
+const QUERY_REWRITE_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";   // sharpens user question before search
+const GENERATION_MODEL    = "@cf/zai-org/glm-4.7-flash";    // reads context, writes answer
+const FALLBACK_MODEL      = "@cf/qwen/qwen3-30b-a3b-fp8";   // if GLM fails, Qwen takes over
+const RERANK_MODEL        = "@cf/baai/bge-reranker-base";   // filters chunks before GLM sees them
 
-Keep answers focused and conversational — this is a dialogue, not a treatise. A few clear paragraphs is better than an encyclopedia entry. If a question goes deep, give the insight and let the reader pull the thread.
+// --- RETRIEVAL ----------------------------------------------
+const INDEX_NAME          = "synergetics-isle";
+const SEARCH_THRESHOLD    = 0.3;   // minimum similarity score to include a chunk
+const SEARCH_MAX_RESULTS  = 17;    // how many chunks Qwen fetches — wide net
+const RERANK_TOP_N        = 11;     // how many chunks survive reranking — GLM reads these
 
-If something isn't in the text or you genuinely don't know, say so plainly. Don't hallucinate Fuller quotes or section numbers.
+// --- GENERATION ---------------------------------------------
+const MAX_TOKENS          = 2347;  // ceiling for GLM output — GLM won't always hit this
 
-Fuller himself was playful, systems-minded, and relentlessly honest. Channel that.`;
+const SYSTEM_PROMPT = `You have read Buckminster Fuller's Synergetics. You answer the user's questions, solving their doubts. Remain within a word range of 300 words. If you do not know something, admit it.`;
 
-const INDEX_NAME = "synergetics-isle";
-const PRIMARY_MODEL = "@cf/zai-org/glm-4.7-flash";
-const FALLBACK_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";
-const MAX_TOKENS = 700;
-const SEARCH_THRESHOLD = 0.3;
-const SEARCH_MAX_RESULTS = 15;
-
+// --- CORS ---------------------------------------------------
 const CORS_HEADERS = {
 	"Access-Control-Allow-Origin": "*",
 	"Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -27,7 +33,7 @@ export interface Env {
 
 export default {
 	async fetch(request: Request, env: Env): Promise<Response> {
-		// Handle CORS preflight
+
 		if (request.method === "OPTIONS") {
 			return new Response(null, { headers: CORS_HEADERS });
 		}
@@ -36,6 +42,7 @@ export default {
 			return new Response("Method not allowed", { status: 405 });
 		}
 
+		// --- PARSE REQUEST --------------------------------------
 		let query: string;
 		try {
 			const body = await request.json() as { query?: string };
@@ -48,31 +55,97 @@ export default {
 			});
 		}
 
-		// Search the indexed Synergetics content
-		let contextChunks = "";
+		// --- STEP 1: QUERY REWRITING ----------------------------
+		// Qwen 30B sharpens the user's question into better search terms
+		// before Qwen embedding searches the index.
+		// This is a non-streaming call — we need the result before we can search.
+		let searchQuery = query;
+		try {
+			const rewriteResult = await (env.AI as any).run(QUERY_REWRITE_MODEL, {
+				messages: [
+					{
+						role: "system",
+						content: `You are a search query optimizer for Buckminster Fuller's Synergetics. 
+Rewrite the user's question into a precise search query using Fuller's exact terminology where appropriate.
+Return only the rewritten query — no explanation, no preamble, no punctuation beyond the query itself.`
+					},
+					{ role: "user", content: query }
+				],
+				max_tokens: 80,  // query rewrite should be short
+				stream: false,
+			});
+			const rewritten = rewriteResult?.response?.trim();
+			if (rewritten) searchQuery = rewritten;
+		} catch (e) {
+			console.error("Query rewrite failed, using original:", e);
+			// non-fatal — fall through with original query
+		}
+
+		// --- STEP 2: RETRIEVAL ----------------------------------
+		// Qwen embedding model converts searchQuery to a vector
+		// and finds the closest matching chunks in the Vectorize index.
+		let chunks: Array<{ content: string; source: string; score: number }> = [];
 		try {
 			const searchResults = await (env.AI as any).autorag(INDEX_NAME).search({
-				query,
+				query: searchQuery,
 				max_num_results: SEARCH_MAX_RESULTS,
 				score_threshold: SEARCH_THRESHOLD,
 			});
 
 			if (searchResults?.data?.length > 0) {
-				contextChunks = searchResults.data
-					.map((r: any) => r.content)
-					.join("\n\n---\n\n");
+				chunks = searchResults.data.map((r: any) => ({
+					content: r.content ?? "",
+					source: r.filename ?? r.source ?? r.url ?? "unknown",
+					score: r.score ?? 0,
+				}));
 			}
 		} catch (e) {
-			console.error("AI Search error:", e);
-			// Continue without context — fallback to general knowledge
+			console.error("Retrieval failed:", e);
+			// non-fatal — will answer from GLM training knowledge
+		}
+
+		// --- STEP 3: RERANKING ----------------------------------
+		// bge-reranker-base re-scores each chunk specifically against
+		// the original user question (not the rewritten one).
+		// Keeps only the top RERANK_TOP_N chunks before passing to GLM.
+		// This keeps GLM's input tight and reduces noise.
+		if (chunks.length > RERANK_TOP_N) {
+			try {
+				const rerankResult = await (env.AI as any).run(RERANK_MODEL, {
+					query: query,  // use original question for reranking judgment
+					contexts: chunks.map(c => ({ text: c.content })),
+				});
+
+				if (rerankResult?.data?.length > 0) {
+					// attach rerank scores and sort descending
+					const reranked = rerankResult.data
+						.map((r: any, i: number) => ({ ...chunks[i], rerankScore: r.score }))
+						.sort((a: any, b: any) => b.rerankScore - a.rerankScore)
+						.slice(0, RERANK_TOP_N);
+					chunks = reranked;
+				}
+			} catch (e) {
+				console.error("Reranking failed, using raw retrieval order:", e);
+				chunks = chunks.slice(0, RERANK_TOP_N);
+			}
+		}
+
+		// --- STEP 4: BUILD CONTEXT FOR GLM ----------------------
+		let contextChunks = "";
+		if (chunks.length > 0) {
+			contextChunks = chunks
+				.map(c => `[Source: ${c.source}]\n${c.content}`)
+				.join("\n\n---\n\n");
 		}
 
 		const userMessage = contextChunks
 			? `Context from Synergetics:\n\n${contextChunks}\n\n---\n\nQuestion: ${query}`
-			: `Question: ${query}\n\n(Note: indexed search unavailable, answering from general knowledge)`;
+			: `Question: ${query}\n\n(No indexed context retrieved — answer from your training knowledge of Synergetics and note this to the user.)`;
 
-		// Try primary model, fall back if it fails
-		const models = [PRIMARY_MODEL, FALLBACK_MODEL];
+		// --- STEP 5: GENERATION (STREAMING) ---------------------
+		// GLM reads the system prompt + retrieved context + question
+		// and streams the answer back to the user.
+		const models = [GENERATION_MODEL, FALLBACK_MODEL];
 		let stream: ReadableStream | null = null;
 
 		for (const model of models) {

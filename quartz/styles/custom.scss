@@ -1,3 +1,18 @@
 @use "./base.scss";
 
 // put your custom CSS here!
+
+.page-title::after {
+  content: "Alpha";
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: var(--lightgray);
+  color: var(--gray);
+  padding: 0.2em 0.6em;
+  border-radius: 3px;
+  margin-top: 0.382rem;
+  width: fit-content;
+}

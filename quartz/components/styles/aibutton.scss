@@ -1,0 +1,37 @@
+.ai-button {
+    cursor: pointer;
+    padding: 0;
+    position: relative;
+    background: none;
+    border: none;
+    height: 32px;
+    margin: 0;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+
+    & .ai-pill {
+        font-family: var(--codeFont);
+        font-size: 0.95rem;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        color: var(--secondary);
+        border: 1px solid var(--lightgray);
+        border-radius: 4px;
+        padding: 0 0.35rem;
+        height: 20px;
+        line-height: 1;
+        transition: color 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+    }
+
+    &:hover .ai-pill {
+        color: var(--light);
+        background-color: var(--secondary);
+        border-color: var(--secondary);
+    }
+}
