@@ -67,6 +67,7 @@ export const defaultListPageLayout: PageLayout = {
           Component: Component.Search(),
           grow: true,
         },
+        { Component: Component.AIButton() },
         { Component: Component.Darkmode() },
       ],
     }),
