@@ -119,13 +119,7 @@ SynergeticsAI.css = `
   gap: 0.5rem;
   color: var(--gray);
   font-size: 0.875rem;
-  font-style: italic;
-}
-
-.thinking-timer {
-  font-variant-numeric: tabular-nums;
-  opacity: 0.6;
-  font-size: 0.75rem;
+  font-style: normal;
 }
 
 .thinking-message {
@@ -144,12 +138,11 @@ SynergeticsAI.afterDOMLoaded = `
 
   const PLACEHOLDER_MESSAGES = [
     "Type your question here",
-    "Let us pray I don't hallucinate today"
   ];
 
-  // Tiered thinking messages by time phase
   const THINKING_MESSAGES = {
     early: [
+      "thinking... ",
       "triangulating an answer...",
       "consulting the geometry of thought...",
       "cross-referencing 1468 pages so you don't have to...",
@@ -189,16 +182,14 @@ SynergeticsAI.afterDOMLoaded = `
 
   function init() {
     const outputEl = document.getElementById("chat-output");
-    const inputEl = document.getElementById("chat-input");
-    const sendBtn = document.getElementById("chat-send");
+    const inputEl  = document.getElementById("chat-input");
+    const sendBtn  = document.getElementById("chat-send");
 
     if (!outputEl || !inputEl || !sendBtn || sendBtn._bound) return;
     sendBtn._bound = true;
 
-    // --- Placeholder: pick once per page load, never rotates ---
     inputEl.placeholder = PLACEHOLDER_MESSAGES[Math.floor(Math.random() * PLACEHOLDER_MESSAGES.length)];
 
-    // --- Textarea resize ---
     const baseHeight = parseFloat(getComputedStyle(inputEl).height);
 
     inputEl.addEventListener("input", function() {
@@ -212,13 +203,9 @@ SynergeticsAI.afterDOMLoaded = `
       }
     });
 
-    // --- Thinking state ---
-    // Single 1s master interval drives timer + message rotation.
-    // Message rotates every MSG_INTERVAL seconds. Phase transitions
-    // always trigger an immediate crossfade, never interrupt mid-fade.
-    const MSG_INTERVAL = 8; // seconds between message changes
+    const MSG_INTERVAL = 8;
     let masterInterval = null;
-    let pendingFade = null; // tracks in-flight fade timeout
+    let pendingFade = null;
 
     function startThinking(contentEl) {
       let seconds = 0;
@@ -238,7 +225,7 @@ SynergeticsAI.afterDOMLoaded = `
       }
 
       function crossfadeTo(msg) {
-        if (pendingFade) return; // don't interrupt an in-flight fade
+        if (pendingFade) return;
         msgEl.classList.add("fade");
         pendingFade = setTimeout(() => {
           msgEl.textContent = msg;
@@ -250,17 +237,14 @@ SynergeticsAI.afterDOMLoaded = `
       const firstMsg = pickMessage("early");
       contentEl.innerHTML = \`
         <div class="thinking-status">
-          <span class="thinking-timer">0s</span>
           <span class="thinking-message">\${firstMsg}</span>
         </div>
       \`;
 
-      const timerEl = contentEl.querySelector(".thinking-timer");
       const msgEl = contentEl.querySelector(".thinking-message");
 
       masterInterval = setInterval(() => {
         seconds++;
-        timerEl.textContent = seconds + "s";
         secondsSinceRotation++;
 
         const newPhase = getPhase(seconds);
@@ -274,7 +258,7 @@ SynergeticsAI.afterDOMLoaded = `
 
         if (phaseJustChanged) {
           phaseJustChanged = false;
-          return; // skip rotation tick right after a phase change
+          return;
         }
 
         if (secondsSinceRotation >= MSG_INTERVAL) {
@@ -293,7 +277,6 @@ SynergeticsAI.afterDOMLoaded = `
       }
     }
 
-    // --- Query handler ---
     async function handleQuery() {
       const query = inputEl.value.trim();
       if (!query || sendBtn.disabled) return;
@@ -322,21 +305,27 @@ SynergeticsAI.afterDOMLoaded = `
           body: JSON.stringify({ query }),
         });
 
-        const reader = response.body.getReader();
+        const reader  = response.body.getReader();
         const decoder = new TextDecoder();
+        let buffer  = "";
         let content = "";
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          const chunks = decoder.decode(value).split("\\n");
-          for (const chunk of chunks) {
-            if (!chunk.startsWith("data: ")) continue;
-            const data = chunk.slice(6).trim();
+
+          buffer += decoder.decode(value, { stream: true });
+
+          const lines = buffer.split("\\n");
+          buffer = lines.pop() ?? "";
+
+          for (const line of lines) {
+            if (!line.startsWith("data: ")) continue;
+            const data = line.slice(6).trim();
             if (data === "[DONE]") break;
             try {
               const parsed = JSON.parse(data);
-              const token = parsed.choices[0].delta.content;
+              const token = parsed.response;
               if (token) {
                 if (!streamStarted) {
                   stopThinking();
@@ -344,13 +333,15 @@ SynergeticsAI.afterDOMLoaded = `
                   streamStarted = true;
                 }
                 content += token;
-                contentEl.innerHTML = content.replace(/\\n\\n/g, "<br><br>");
+                contentEl.innerHTML = content
+                  .replace(/\\*\\*(.+?)\\*\\*/g, "<strong>$1</strong>")
+                  .replace(/\\n\\n/g, "<br><br>")
+                  .replace(/\\n/g, "<br>");
               }
             } catch (e) {}
           }
         }
 
-        // Stream ended cleanly but never sent a token — treat as stall
         if (!streamStarted) {
           stopThinking();
           contentEl.textContent = "No response came through. Try sending again.";
@@ -361,7 +352,6 @@ SynergeticsAI.afterDOMLoaded = `
         contentEl.textContent = "Something went wrong. Try again.";
       }
 
-      // Always re-enable input when done
       sendBtn.disabled = false;
       inputEl.focus();
     }

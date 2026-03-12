@@ -1,187 +1,205 @@
 // ============================================================
 // SYNERGETICS ISLE — AI WORKER
-// Pipeline: Query Rewrite → Embed & Retrieve → Rerank → Generate
+// Pipeline: Multi-Query Expand → Retrieve & Merge → Generate
+// Reranking is handled natively inside .search() — no manual reranker call
 // ============================================================
 
 // --- MODELS -------------------------------------------------
-const QUERY_REWRITE_MODEL = "@cf/qwen/qwen3-30b-a3b-fp8";   // sharpens user question before search
-const GENERATION_MODEL    = "@cf/zai-org/glm-4.7-flash";    // reads context, writes answer
-const FALLBACK_MODEL      = "@cf/qwen/qwen3-30b-a3b-fp8";   // if GLM fails, Qwen takes over
-const RERANK_MODEL        = "@cf/baai/bge-reranker-base";   // filters chunks before GLM sees them
+const GENERATION_MODEL = "@cf/meta/llama-3.3-70b-instruct-fp8-fast";
+const FALLBACK_MODEL   = "@cf/qwen/qwen3-30b-a3b-fp8";
+const RERANK_MODEL     = "@cf/baai/bge-reranker-base";
+const EXPAND_MODEL     = "@cf/qwen/qwen3-30b-a3b-fp8";
 
 // --- RETRIEVAL ----------------------------------------------
-const INDEX_NAME          = "synergetics-isle";
-const SEARCH_THRESHOLD    = 0.3;   // minimum similarity score to include a chunk
-const SEARCH_MAX_RESULTS  = 17;    // how many chunks Qwen fetches — wide net
-const RERANK_TOP_N        = 11;     // how many chunks survive reranking — GLM reads these
+const INDEX_NAME         = "synergetics-isle";
+const SEARCH_MAX_RESULTS = 6;   // per query; up to 4 queries × 6 = 24 before dedup
+const RERANK_TOP_N       = 5;   // final chunks passed to generation
 
 // --- GENERATION ---------------------------------------------
-const MAX_TOKENS          = 2347;  // ceiling for GLM output — GLM won't always hit this
+const MAX_TOKENS = 2347;
 
-const SYSTEM_PROMPT = `You have read Buckminster Fuller's Synergetics. You answer the user's questions, solving their doubts. Remain within a word range of 300 words. If you do not know something, admit it.`;
+const SYSTEM_PROMPT = `You have read Buckminster Fuller's Synergetics. Help the user with thier question, Stay within 300 words. If a good match for the user's query is not found in your indexed data, admit it at the beginning of your answer so the user is aware. Always try to be friendly but honest. Do not request the user to ask a follow up.`;
+
+const EXPAND_PROMPT = `Help the user out with all that you know of Synergetics.`;
 
 // --- CORS ---------------------------------------------------
 const CORS_HEADERS = {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "POST, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
 };
 
 export interface Env {
-	AI: Ai;
+  AI: Ai;
 }
 
+// The content field in AI Search responses is an array of {id, type, text} objects
+type ContentBlock = { id: string; type: string; text: string };
+
+type SearchResult = {
+  file_id: string;
+  filename: string;
+  score: number;
+  attributes?: Record<string, unknown>;
+  content: ContentBlock[];
+};
+
+type Chunk = { content: string; source: string; score: number };
+
 export default {
-	async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
 
-		if (request.method === "OPTIONS") {
-			return new Response(null, { headers: CORS_HEADERS });
-		}
+    if (request.method === "OPTIONS") {
+      return new Response(null, { headers: CORS_HEADERS });
+    }
 
-		if (request.method !== "POST") {
-			return new Response("Method not allowed", { status: 405 });
-		}
+    if (request.method !== "POST") {
+      return new Response("Method not allowed", { status: 405 });
+    }
 
-		// --- PARSE REQUEST --------------------------------------
-		let query: string;
-		try {
-			const body = await request.json() as { query?: string };
-			query = body.query?.trim() ?? "";
-			if (!query) throw new Error("Empty query");
-		} catch {
-			return new Response(JSON.stringify({ error: "Invalid request body" }), {
-				status: 400,
-				headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-			});
-		}
+    // --- PARSE REQUEST --------------------------------------
+    let query: string;
+    try {
+      const body = await request.json() as { query?: string };
+      query = body.query?.trim() ?? "";
+      if (!query) throw new Error("Empty query");
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid request body" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
+    }
 
-		// --- STEP 1: QUERY REWRITING ----------------------------
-		// Qwen 30B sharpens the user's question into better search terms
-		// before Qwen embedding searches the index.
-		// This is a non-streaming call — we need the result before we can search.
-		let searchQuery = query;
-		try {
-			const rewriteResult = await (env.AI as any).run(QUERY_REWRITE_MODEL, {
-				messages: [
-					{
-						role: "system",
-						content: `You are a search query optimizer for Buckminster Fuller's Synergetics. 
-Rewrite the user's question into a precise search query using Fuller's exact terminology where appropriate.
-Return only the rewritten query — no explanation, no preamble, no punctuation beyond the query itself.`
-					},
-					{ role: "user", content: query }
-				],
-				max_tokens: 80,  // query rewrite should be short
-				stream: false,
-			});
-			const rewritten = rewriteResult?.response?.trim();
-			if (rewritten) searchQuery = rewritten;
-		} catch (e) {
-			console.error("Query rewrite failed, using original:", e);
-			// non-fatal — fall through with original query
-		}
+    // --- STEP 1: QUERY EXPANSION ----------------------------
+    // Generate 3 queries from different angles using Fuller's vocabulary.
+    // Falls back to just the original query if expansion fails.
+    let queries: string[] = [query];
+    try {
+      const expandResult = await (env.AI as any).run(EXPAND_MODEL, {
+        messages: [
+          { role: "system", content: EXPAND_PROMPT },
+          { role: "user", content: query },
+        ],
+        max_tokens: 120,
+        stream: false,
+      });
+      const raw = expandResult?.response?.trim() ?? "";
+      const expanded = raw
+        .split("\n")
+        .map((l: string) => l.trim())
+        .filter((l: string) => l.length > 0)
+        .slice(0, 3);
+      if (expanded.length > 0) {
+        queries = [...new Set([query, ...expanded])].slice(0, 4);
+        console.log("[expand] queries:", JSON.stringify(queries));
+      }
+    } catch (e) {
+      console.error("[expand] failed, using original:", e);
+    }
 
-		// --- STEP 2: RETRIEVAL ----------------------------------
-		// Qwen embedding model converts searchQuery to a vector
-		// and finds the closest matching chunks in the Vectorize index.
-		let chunks: Array<{ content: string; source: string; score: number }> = [];
-		try {
-			const searchResults = await (env.AI as any).autorag(INDEX_NAME).search({
-				query: searchQuery,
-				max_num_results: SEARCH_MAX_RESULTS,
-				score_threshold: SEARCH_THRESHOLD,
-			});
+    // --- STEP 2: MULTI-QUERY RETRIEVAL ----------------------
+    // Run all queries in parallel using the native .search() with built-in reranking.
+    // Merge results and deduplicate by file_id.
+    const seenIds = new Set<string>();
+    let chunks: Chunk[] = [];
 
-			if (searchResults?.data?.length > 0) {
-				chunks = searchResults.data.map((r: any) => ({
-					content: r.content ?? "",
-					source: r.filename ?? r.source ?? r.url ?? "unknown",
-					score: r.score ?? 0,
-				}));
-			}
-		} catch (e) {
-			console.error("Retrieval failed:", e);
-			// non-fatal — will answer from GLM training knowledge
-		}
+    await Promise.all(
+      queries.map(async (q) => {
+        try {
+          const result = await (env.AI as any).autorag(INDEX_NAME).search({
+            query: q,
+            max_num_results: SEARCH_MAX_RESULTS,
+            ranking_options: {
+              score_threshold: 0,
+            },
+            reranking: {
+              enabled: true,
+              model: RERANK_MODEL,
+            },
+          });
 
-		// --- STEP 3: RERANKING ----------------------------------
-		// bge-reranker-base re-scores each chunk specifically against
-		// the original user question (not the rewritten one).
-		// Keeps only the top RERANK_TOP_N chunks before passing to GLM.
-		// This keeps GLM's input tight and reduces noise.
-		if (chunks.length > RERANK_TOP_N) {
-			try {
-				const rerankResult = await (env.AI as any).run(RERANK_MODEL, {
-					query: query,  // use original question for reranking judgment
-					contexts: chunks.map(c => ({ text: c.content })),
-				});
+          if (result?.data?.length > 0) {
+            for (const r of result.data as SearchResult[]) {
+              if (!seenIds.has(r.file_id)) {
+                seenIds.add(r.file_id);
+                // content is an array of blocks — join their text
+                const text = r.content
+                  .map((block) => block.text)
+                  .join("\n")
+                  .trim();
+                chunks.push({
+                  content: text,
+                  source: r.filename ?? r.file_id ?? "unknown",
+                  score: r.score ?? 0,
+                });
+              }
+            }
+          }
+        } catch (e) {
+          console.error("[retrieval] query failed:", q, e);
+        }
+      })
+    );
 
-				if (rerankResult?.data?.length > 0) {
-					// attach rerank scores and sort descending
-					const reranked = rerankResult.data
-						.map((r: any, i: number) => ({ ...chunks[i], rerankScore: r.score }))
-						.sort((a: any, b: any) => b.rerankScore - a.rerankScore)
-						.slice(0, RERANK_TOP_N);
-					chunks = reranked;
-				}
-			} catch (e) {
-				console.error("Reranking failed, using raw retrieval order:", e);
-				chunks = chunks.slice(0, RERANK_TOP_N);
-			}
-		}
+    // Sort merged pool by score, take top N
+    chunks.sort((a, b) => b.score - a.score);
+    chunks = chunks.slice(0, RERANK_TOP_N);
 
-		// --- STEP 4: BUILD CONTEXT FOR GLM ----------------------
-		let contextChunks = "";
-		if (chunks.length > 0) {
-			contextChunks = chunks
-				.map(c => `[Source: ${c.source}]\n${c.content}`)
-				.join("\n\n---\n\n");
-		}
+    console.log("[retrieval] total unique chunks after merge:", chunks.length);
+    if (chunks[0]) {
+      console.log("[retrieval] top score:", chunks[0].score, "| source:", chunks[0].source);
+    }
 
-		const userMessage = contextChunks
-			? `Context from Synergetics:\n\n${contextChunks}\n\n---\n\nQuestion: ${query}`
-			: `Question: ${query}\n\n(No indexed context retrieved — answer from your training knowledge of Synergetics and note this to the user.)`;
+    // --- STEP 3: BUILD CONTEXT ------------------------------
+    let contextChunks = "";
+    if (chunks.length > 0) {
+      contextChunks = chunks
+        .map((c) => `[Source: ${c.source}]\n${c.content}`)
+        .join("\n\n---\n\n");
+    }
 
-		// --- STEP 5: GENERATION (STREAMING) ---------------------
-		// GLM reads the system prompt + retrieved context + question
-		// and streams the answer back to the user.
-		const models = [GENERATION_MODEL, FALLBACK_MODEL];
-		let stream: ReadableStream | null = null;
+    const userMessage = contextChunks
+      ? `Context from Synergetics:\n\n${contextChunks}\n\n---\n\nQuestion: ${query}`
+      : `Question: ${query}\n\nNo context was retrieved from the index.`;
 
-		for (const model of models) {
-			try {
-				stream = await (env.AI as any).run(model, {
-					messages: [
-						{ role: "system", content: SYSTEM_PROMPT },
-						{ role: "user", content: userMessage },
-					],
-					max_tokens: MAX_TOKENS,
-					stream: true,
-				}) as ReadableStream;
-				break;
-			} catch (e) {
-				console.error(`Model ${model} failed:`, e);
-				continue;
-			}
-		}
+    // --- STEP 4: GENERATION (STREAMING) ---------------------
+    const models = [GENERATION_MODEL, FALLBACK_MODEL];
+    let stream: ReadableStream | null = null;
 
-		if (!stream) {
-			return new Response(
-				JSON.stringify({ error: "All models unavailable. Please try again later." }),
-				{
-					status: 503,
-					headers: { "Content-Type": "application/json", ...CORS_HEADERS },
-				}
-			);
-		}
+    for (const model of models) {
+      try {
+        stream = await (env.AI as any).run(model, {
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            { role: "user", content: userMessage },
+          ],
+          max_tokens: MAX_TOKENS,
+          stream: true,
+        }) as ReadableStream;
+        console.log("[generation] using model:", model);
+        break;
+      } catch (e) {
+        console.error(`[generation] model ${model} failed:`, e);
+      }
+    }
 
-		return new Response(stream, {
-			headers: {
-				"Content-Type": "text/event-stream",
-				"Cache-Control": "no-cache",
-				Connection: "keep-alive",
-				...CORS_HEADERS,
-			},
-		});
-	},
+    if (!stream) {
+      return new Response(
+        JSON.stringify({ error: "All models unavailable. Please try again later." }),
+        {
+          status: 503,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        }
+      );
+    }
+
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+        ...CORS_HEADERS,
+      },
+    });
+  },
 } satisfies ExportedHandler<Env>;
