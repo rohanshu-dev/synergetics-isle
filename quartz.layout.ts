@@ -2,7 +2,7 @@ import { PageLayout, SharedLayout } from "./quartz/cfg"
 import * as Component from "./quartz/components"
 
 const explorerConfig = {
-  filterFn: (node: any) => !(node as any).data?.tags?.includes("unlisted"),
+  filterFn: (node: any) => node.data?.frontmatter?.explorer !== false,
   sortFn: (a: any, b: any) => {
     const order: Record<string, number> = {
       "Copyright": 1,
