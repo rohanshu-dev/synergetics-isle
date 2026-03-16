@@ -200,6 +200,12 @@ async function generate(messages: object[], env: Env): Promise<ReadableStream> {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
 
+    const url = new URL(request.url);
+
+    if (url.pathname === '/ping') {
+      return new Response('ok', { status: 200 });
+    }
+
     if (request.method === "OPTIONS") {
 
       return new Response(null, { headers: CORS_HEADERS });
@@ -279,5 +285,16 @@ export default {
         ...CORS_HEADERS,
       },
     });
+  },
+
+  async scheduled(_event: ScheduledController, env: Env, _ctx: ExecutionContext): Promise<void> {
+    try {
+      const res = await fetch(`${QDRANT_URL}/collections/${QDRANT_COLLECTION}`, {
+        headers: { "api-key": env.QDRANT_API_KEY },
+      });
+      console.log(`[cron] Qdrant ping: ${res.status}`);
+    } catch (e) {
+      console.error("[cron] Qdrant ping failed:", e);
+    }
   },
 } satisfies ExportedHandler<Env>;
