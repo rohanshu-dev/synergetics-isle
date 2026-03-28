@@ -264,7 +264,7 @@ a {
     display: grid;
     grid-template-columns: #{map.get($desktopGrid, templateColumns)};
     grid-template-rows: #{map.get($desktopGrid, templateRows)};
-    column-gap: var(--sp-xl);
+    column-gap: var(--sp-md);
     row-gap: var(--sp-lg);
     grid-template-areas: #{map.get($desktopGrid, templateAreas)};
 
@@ -487,33 +487,33 @@ h6 {
 }
 
 h1 {
-  font-size: var(--text-2xl);    // 2.618rem — φ²
-  line-height: var(--lh-tight);
-  margin-top: var(--sp-2xl);     // 4.236rem — φ³
-  margin-bottom: var(--sp-lg);   // 1.618rem — φ¹
-}
-
-h2 {
   font-size: var(--text-xl);     // 2.058rem — φ^1.5
   line-height: var(--lh-tight);
   margin-top: var(--sp-xl);      // 2.618rem — φ²
   margin-bottom: var(--sp-md);   // 1rem     — φ⁰
 }
 
-h3 {
+h2 {
   font-size: var(--text-lg);     // 1.618rem — φ¹
   line-height: var(--lh-tight);
   margin-top: var(--sp-xl);      // 2.618rem — φ²
-  margin-bottom: var(--sp-md);   // 1rem     — φ⁰
+  margin-bottom: var(--sp-sm);   // 0.618rem — φ⁻¹
+}
+
+h3 {
+  font-size: var(--text-md);     // 1.272rem — φ^0.5
+  line-height: var(--lh-tight);
+  margin-top: var(--sp-lg);      // 1.618rem — φ¹
+  margin-bottom: var(--sp-sm);   // 0.618rem — φ⁻¹
 }
 
 h4,
 h5,
 h6 {
-  font-size: var(--text-md);     // 1.272rem — φ^0.5
+  font-size: var(--text-base);   // 1rem     — φ⁰
   line-height: var(--lh-tight);
   margin-top: var(--sp-lg);      // 1.618rem — φ¹
-  margin-bottom: var(--sp-sm);   // 0.618rem — φ⁻¹
+  margin-bottom: var(--sp-xs);   // 0.382rem — φ⁻²
 }
 
 // =============================================================================
