@@ -1,4 +1,8 @@
-
+/**
+ * anchor.inline.ts
+ * Strictly correct scroll-to-hash and anchor handling for Quartz 4.
+ * Tracks the target element's absolute position to detect layout convergence.
+ */
 
 const svgCheck = `<polyline points="20 6 9 17 4 12"></polyline>`
 
@@ -58,29 +62,115 @@ export function attachAnchorListeners(container: HTMLElement | Document, pageSlu
   })
 }
 
-document.addEventListener("nav", () => {
-  if (window.location.hash) {
-    const id = decodeURIComponent(window.location.hash.slice(1))
-    const el = document.getElementById(id)
-    if (!el) return
+/**
+ * SCROLL TO HASH LOGIC
+ */
+let isScrolling = false
 
-    // Prevent browser's instant jump
-    const scrollPos = window.scrollY
-    document.documentElement.style.visibility = "hidden"
-
-    document.fonts.ready.then(() => {
-      // Restore scroll position browser may have jumped to
-      window.scrollTo(0, scrollPos)
-
-      requestAnimationFrame(() => {
-        el.scrollIntoView({ behavior: "smooth" })
-        document.documentElement.style.visibility = ""
-      })
+function scrollToHash() {
+  if (!window.location.hash || isScrolling) return
+  const id = decodeURIComponent(window.location.hash.slice(1))
+  const el = document.getElementById(id)
+  
+  if (!el) {
+    // Retry once for hydration lag (Quartz 4 SPA timing)
+    requestAnimationFrame(() => {
+      const retryEl = document.getElementById(id)
+      if (retryEl) executeScroll(retryEl)
     })
+    return
   }
 
+  executeScroll(el)
+}
+
+function executeScroll(el: HTMLElement) {
+  isScrolling = true
+  let finished = false
+  let started = false
+  let rafId: number | null = null
+  
+  // Suppress visual jump during settlement
+  document.documentElement.style.visibility = "hidden"
+
+  const finalize = () => {
+    if (finished) return
+    finished = true
+    
+    // Total Cleanup
+    observer.disconnect()
+    if (rafId) cancelAnimationFrame(rafId)
+    clearTimeout(hardTimeout)
+    
+    // Final Scroll
+    el.scrollIntoView()
+    document.documentElement.style.visibility = ""
+    isScrolling = false
+  }
+
+  // Use the element's position relative to the document as our invariant.
+  // This is strictly more correct than tracking scrollHeight.
+  let lastTop = el.getBoundingClientRect().top + window.scrollY
+  let stableFrames = 0
+  const REQUIRED_STABLE_FRAMES = 3 
+
+  const checkStability = () => {
+    const currentTop = el.getBoundingClientRect().top + window.scrollY
+    
+    // Use a small tolerance (0.5px) for sub-pixel layout jitter
+    if (Math.abs(currentTop - lastTop) < 0.5) {
+      stableFrames++
+    } else {
+      lastTop = currentTop
+      stableFrames = 0
+    }
+
+    if (stableFrames >= REQUIRED_STABLE_FRAMES) {
+      finalize()
+    }
+  }
+
+  // 1. ResizeObserver: Major shifts
+  const observer = new ResizeObserver(checkStability)
+
+  // 2. RAF Polling: Subtle/Silent positional drifts
+  const poll = () => {
+    if (finished) return
+    checkStability()
+    rafId = requestAnimationFrame(poll)
+  }
+
+  // Safety net: 1.2s max
+  const hardTimeout = setTimeout(finalize, 1200)
+
+  const startObserving = () => {
+    if (started || finished) return
+    started = true
+    lastTop = el.getBoundingClientRect().top + window.scrollY
+    observer.observe(document.documentElement)
+    poll()
+  }
+
+  // Dual-trigger startup
+  document.fonts.ready.then(startObserving)
+  requestAnimationFrame(startObserving)
+}
+
+// Quartz SPA navigation
+document.addEventListener("nav", () => {
+  isScrolling = false 
+  scrollToHash()
   attachAnchorListeners(document)
 })
+
+// Hard Reload / Initial Visit
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    requestAnimationFrame(scrollToHash)
+  })
+} else {
+  requestAnimationFrame(scrollToHash)
+}
 
 // //------------------------------------------------------------------------
 // //------------------------------------------------------------------------
