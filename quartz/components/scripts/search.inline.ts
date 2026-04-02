@@ -2,6 +2,7 @@ import FlexSearch, { DefaultDocumentSearchResults } from "flexsearch"
 import { ContentDetails } from "../../plugins/emitters/contentIndex"
 import { registerEscapeHandler, removeAllChildren } from "./util"
 import { FullSlug, normalizeRelativeURLs, resolveRelative } from "../../util/path"
+import { attachAnchorListeners } from "./anchors.inline"
 
 interface Item {
   id: number
@@ -141,9 +142,8 @@ function highlight(searchTerm: string, text: string, trim?: boolean) {
     })
     .join(" ")
 
-  return `${startIndex === 0 ? "" : "..."}${slice}${
-    endIndex === tokenizedText.length - 1 ? "" : "..."
-  }`
+  return `${startIndex === 0 ? "" : "..."}${slice}${endIndex === tokenizedText.length - 1 ? "" : "..."
+    }`
 }
 
 function highlightHTML(searchTerm: string, el: HTMLElement) {
@@ -427,6 +427,7 @@ async function setupSearch(searchElement: Element, currentSlug: FullSlug, data: 
     previewInner.classList.add("preview-inner")
     previewInner.append(...innerDiv)
     preview.replaceChildren(previewInner)
+    attachAnchorListeners(previewInner, slug)  // attach copy-link behavior to heading anchors in preview
 
     // scroll to longest
     const highlights = [...preview.getElementsByClassName("highlight")].sort(
