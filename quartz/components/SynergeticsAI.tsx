@@ -227,7 +227,7 @@ SynergeticsAI.css = `
 
 SynergeticsAI.afterDOMLoaded = `
 (function() {
-  if (!document.getElementById("synergetics-container")) return;
+
   const WORKER_URL = "https://synergetics-worker.rohanshu.workers.dev";
 
   // Load marked.js for proper markdown rendering
@@ -296,13 +296,19 @@ SynergeticsAI.afterDOMLoaded = `
     return "early";
   }
 
-  function init() {
-    const outputEl = document.getElementById("chat-output");
-    const inputEl  = document.getElementById("chat-input");
-    const sendBtn  = document.getElementById("chat-send");
+function tryInit(attempts = 0) {
+  const inputEl = document.getElementById("chat-input");
+  if (!inputEl) {
+    if (attempts < 10) setTimeout(() => tryInit(attempts + 1), 50);
+    return;
+  }
+  if (inputEl._bound) return;
+  inputEl._bound = true;
 
-    if (!outputEl || !inputEl || !sendBtn || sendBtn._bound) return;
-    sendBtn._bound = true;
+const outputEl = document.getElementById("chat-output");
+const sendBtn  = document.getElementById("chat-send");
+
+if (!outputEl || !sendBtn) return;
 
     inputEl.placeholder = PLACEHOLDER_MESSAGES[Math.floor(Math.random() * PLACEHOLDER_MESSAGES.length)];
 
@@ -478,8 +484,12 @@ SynergeticsAI.afterDOMLoaded = `
     });
   }
 
-  document.addEventListener("nav", init);
-  init();
+document.addEventListener("nav", () => {
+  const inputEl = document.getElementById("chat-input");
+  if (inputEl) inputEl._bound = false;
+  tryInit();
+});
+tryInit();
 })();
 `
 
