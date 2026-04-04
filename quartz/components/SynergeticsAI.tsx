@@ -94,12 +94,12 @@ SynergeticsAI.css = `
   letter-spacing: 0.1em;
   color: var(--gray);
   margin-bottom: 0.382rem;
-  font-weight: 600;
+  font-weight: $boldWeight;
 }
 
 .query-text {
   font-size: 1.618rem;
-  font-weight: 600;
+  font-weight: $boldWeight;
   margin-bottom: 1.618rem;
   line-height: 1.382;
 }
@@ -127,7 +127,7 @@ SynergeticsAI.css = `
 .answer-content h4 {
   margin: 1.4rem 0 0.5rem;
   line-height: 1.3;
-  font-weight: 600;
+  font-weight: $boldWeight;
 }
 
 .answer-content h1 { font-size: 1.382rem; }
@@ -159,7 +159,7 @@ SynergeticsAI.css = `
 }
 
 .answer-content th {
-  font-weight: 600;
+  font-weight: $boldWeight;
   color: var(--darkgray);
   background: var(--lightgray);
 }
@@ -198,7 +198,7 @@ SynergeticsAI.css = `
   font-style: italic;
 }
 
-.answer-content strong { font-weight: 600; }
+.answer-content strong { font-weight: $boldWeight; }
 .answer-content em { font-style: italic; }
 
 .answer-content hr {

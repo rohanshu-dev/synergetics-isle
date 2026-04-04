@@ -38,7 +38,7 @@ $gap-sm: 0.618rem; // φ⁻¹
 $gap-md: 1rem;     // φ⁰
 $topSpacing: gold-vh(5); // φ²
 
-$boldWeight: 700; // This variable is not used anywhere as per VS Code's search but this 700 is what renders by default if available... for some reason. Even after replacing its one use-case from search.scss
+$boldWeight: 700;
 $semiBoldWeight: 600;
 $normalWeight: 400;
 

@@ -34,7 +34,9 @@
   --text-sm: 0.764rem;
   --text-base: 1rem;
   --text-md: 1.272rem;
+  --text-md-plus: 1.420rem; // φ^0.75 — between md and lg
   --text-lg: 1.618rem;
+  --text-xl-minus: 1.899rem; // φ^1.25
   --text-xl: 2.058rem;
   --text-2xl: 2.618rem;
   --text-3xl: 4.236rem;
@@ -249,9 +251,9 @@ a {
   margin: 0 auto;
 
   & article {
-    &>h1 {
-      font-size: var(--text-xl);
-    }
+    // &>h1 {
+    //   font-size: var(--text-xl);
+    // }
 
     & li:has(> input[type="checkbox"]) {
       list-style-type: none;
@@ -521,14 +523,14 @@ h6 {
 }
 
 h1 {
-  font-size: var(--text-xl); // 2.058rem — φ^1.5
+  font-size: var(--text-xl-minus); // 1.899rem — φ^1.25
   line-height: var(--lh-tight);
   margin-top: var(--sp-xl); // 2.618rem — φ²
   margin-bottom: var(--sp-md); // 1rem     — φ⁰
 }
 
 h2 {
-  font-size: var(--text-lg); // 1.618rem — φ¹
+  font-size: var(--text-lg);  // power 1
   line-height: var(--lh-tight);
   margin-top: var(--sp-xl); // 2.618rem — φ²
   margin-bottom: var(--sp-sm); // 0.618rem — φ⁻¹

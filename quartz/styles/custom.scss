@@ -51,10 +51,19 @@
     font-display: swap;
 }
 
-// Bebas Neue - Site title
+// // Bebas Neue - Site title
+// @font-face {
+//     font-family: 'Bebas Neue';
+//     src: url('/static/fonts/bebas-neue-v16-latin-regular.woff2') format('woff2');
+//     font-weight: 400;
+//     font-style: normal;
+//     font-display: swap;
+// }
+
+// Abril Fatface - Site title
 @font-face {
-    font-family: 'Bebas Neue';
-    src: url('/static/fonts/bebas-neue-v16-latin-regular.woff2') format('woff2');
+    font-family: 'Abril Fatface';
+    src: url('/static/fonts/abril-fatface-v25-latin-regular.woff2') format('woff2');
     font-weight: 400;
     font-style: normal;
     font-display: swap;
@@ -74,21 +83,31 @@
 
 // ──── TYPOGRAPHY ───────────────────────────────────────────────
 .page-title a {
-    font-family: "Bebas Neue", sans-serif;
-    font-size: 2.618rem;
+    //font-family: "Abril Fatface", sans-serif;
+    font-size: calc(var(--text-lg) + var(--text-xs)); // 1.618 + 0.618 = 2.236rem = φ^√5
     //font-weight: 700;
     display: inline-block;
     line-height: 1;
     //color: #6D0015; //color of the original synergetics 1 book
 }
 
+// font-size: 3.236rem, 2.618rem, 2.058rem;
+
+
 // #quartz-body h1 {
-//     font-size: calc(var(--text-sm) + var(--text-base));
+//     // font-size: calc(var(--text-sm) + var(--text-base));
+//     font-size: var(--text-xl-minus);
+//     // font-size: 1.899rem;
 // }
 
-// #quartz-body h1.article-title {
-//     font-size: var(--text-xl);
+// #quartz-body h2 {
+//     font-size: calc(var(--text-sm) + var(--text-base));
+//     // font-size: var(--text-lg);
 // }
+
+#quartz-body h1.article-title {
+    font-size: var(--text-xl);
+}
 
 
 
@@ -96,7 +115,7 @@
 //     color: #982117; //color of second synergetics volume #F62427 x 0.618
 // }
 
-// font-size: 3.236rem, 2.618rem;
+
 
 // .page-title a::after {
 //     content: "R. Buckminster Fuller";
@@ -139,7 +158,7 @@
 
 
 
-
+// Adjusting Literta to be as big as Inter for the same on-paper font size
 #quartz-body a.folder-title {
     font-size: 1.05rem;
 }

@@ -85,8 +85,9 @@ export default (() => {
 
         <link rel="icon" href={iconPath} />
         <link rel="preload" href={`${baseDir}/static/fonts/inter-v20-latin-regular.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href={`${baseDir}/static/fonts/literata-v40-latin-600.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
-        <link rel="preload" href={`${baseDir}/static/fonts/bebas-neue-v16-latin-regular.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href={`${baseDir}/static/fonts/literata-v40-latin-700.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
+        {/* <link rel="preload" href={`${baseDir}/static/fonts/bebas-neue-v16-latin-regular.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" /> */}
+        <link rel="preload" href={`${baseDir}/static/fonts/abril-fatface-v25-latin-regular.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
         <meta name="description" content={description} />
         <meta name="generator" content="Quartz" />
 
