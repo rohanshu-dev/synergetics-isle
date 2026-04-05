@@ -12,3 +12,4 @@ replit.nix
 .env.dev.vars
 scripts/.env
 synergetics-worker/dev.vars
+.wrangler/
