@@ -94,9 +94,15 @@
 
 // on mobile, this font was rearranging the layout, so restricting it to desktop
 @media all and (min-width: 801px) {
-  .page-title a {
-    font-size: 2.236rem;
-  }
+    .page-title a {
+        font-size: 2.236rem;
+    }
+}
+
+.page-title a {
+    font-weight: 400;
+    -webkit-text-stroke: 0.618px currentColor;
+    paint-order: stroke fill;
 }
 
 // font-size: 3.236rem, 2.618rem, 2.058rem;
