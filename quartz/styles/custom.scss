@@ -305,9 +305,9 @@ html {
   margin-bottom: -2px;
 }
 
-// trying to fix the button retaining focus on a mobile even AFTER being tapped
-.ai-button:focus:not(:focus-visible) {
-  outline: none;
+// trying to fix the ai button and site title retaining focus on a mobile even AFTER being tapped
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 .ai-button:active {
