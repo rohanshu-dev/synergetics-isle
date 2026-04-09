@@ -1,0 +1,30 @@
+views:
+  - type: table
+    name: Table
+    order:
+      - file.name
+      - explorer
+      - author
+      - cssclasses
+      - m-equations
+      - m-headings
+      - m-images
+      - m-issues
+      - m-italics
+      - m-links
+      - m-links-2
+      - m-proofread
+      - m-range
+      - m-replication
+      - rough
+      - order
+      - rough-equations
+      - rough-heading
+      - rough-links
+      - rough-progress
+      - structure
+      - title
+      - m-emDash
+    sort:
+      - property: file.name
+        direction: DESC
