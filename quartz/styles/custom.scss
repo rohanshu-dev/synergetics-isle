@@ -46,7 +46,7 @@
 @font-face {
     font-family: 'Literata';
     src: url('/static/fonts/literata-v40-latin-600.woff2') format('woff2');
-    font-weight: 700;
+    font-weight: 600;
     font-style: normal;
     font-display: swap;
 }
@@ -64,7 +64,7 @@
 @font-face {
     font-family: 'Ubuntu Sans';
     src: url('/static/fonts/ubuntu-sans-v4-latin-700.woff2') format('woff2');
-    font-weight: 400;
+    // font-weight: 400;
     font-style: normal;
     font-display: swap;
 }
