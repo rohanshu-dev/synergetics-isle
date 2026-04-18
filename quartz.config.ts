@@ -36,26 +36,26 @@ const config: QuartzConfig = {
       },
       colors: {
         lightMode: {
-          light: "#faf8f8",
-          lightgray: "#e5e5e5",
-          gray: "#b8b8b8",
-          darkgray: "#4e4e4e",
-          dark: "#2b2b2b",
-          secondary: "#284b63",
-          tertiary: "#84a59d",
-          highlight: "rgba(143, 159, 169, 0.15)",
-          textHighlight: "#fff23688",
+          light: "#FFF8E7", // Cosmic Latte
+          lightgray: "#EBE3D5", // Soft, warm gray for subtle backgrounds/borders
+          gray: "#8C847A", // Natural stone gray for meta text
+          darkgray: "#4A443F", // Deep bark brown for highly readable body text
+          dark: "#2C2825", // Near-black espresso for strong headings
+          secondary: "#3A6351", // Synergetic botanical green for links
+          tertiary: "#B85C38", // Terracotta clay for hover states/accents
+          highlight: "rgba(58, 99, 81, 0.12)", // Soft botanical green highlight
+          textHighlight: "#F4D35E88", // Golden ratio yellow
         },
         darkMode: {
-          light: "#161618",
-          lightgray: "#393639",
-          gray: "#646464",
-          darkgray: "#d4d4d4",
-          dark: "#ebebec",
-          secondary: "#7b97aa",
-          tertiary: "#84a59d",
-          highlight: "rgba(143, 159, 169, 0.15)",
-          textHighlight: "#b3aa0288",
+          light: "#1A1918", // Deep warm void
+          lightgray: "#36312D",
+          gray: "#8C847A",
+          darkgray: "#D4CFC9", // Soft ash for readable dark mode text
+          dark: "#FFF8E7", // Cosmic Latte as the heading text!
+          secondary: "#6DA38A", // Lighter sage green for visibility
+          tertiary: "#E2B487", // Warm sandstone
+          highlight: "rgba(109, 163, 138, 0.15)",
+          textHighlight: "#D4A37388",
         },
       },
     },
