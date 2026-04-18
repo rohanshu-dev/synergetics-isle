@@ -223,6 +223,38 @@ SynergeticsAI.css = `
 .thinking-message.fade {
   opacity: 0;
 }
+
+/* Copy Button Styles */
+.copy-action-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.618rem;
+}
+
+.copy-dialogue-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.382rem;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--gray);
+  font-family: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 0.382rem 0.618rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.copy-dialogue-btn:hover {
+  color: var(--dark);
+  background: var(--light);
+  border-color: var(--lightgray);
+}
+
+.copy-dialogue-btn.success {
+  color: var(--dark);
+}
 `
 
 SynergeticsAI.afterDOMLoaded = `
@@ -408,17 +440,31 @@ if (!outputEl || !sendBtn) return;
       inputEl.style.overflowY = "hidden";
       sendBtn.disabled = true;
 
+      // Injected copy button starts hidden (opacity 0, pointer-events none)
       outputEl.innerHTML = \`
         <div class="query-label">Question</div>
         <div class="query-text">\${query}</div>
         <div class="query-label">Answer</div>
         <div class="answer-content"></div>
+        <div class="copy-action-wrapper" style="opacity: 0; pointer-events: none; transition: opacity 0.4s ease;">
+          <button class="copy-dialogue-btn" aria-label="Copy Response">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+              <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+            </svg>
+            <span>Copy Response</span>
+          </button>
+        </div>
       \`;
 
       const contentEl = outputEl.querySelector(".answer-content");
+      const copyWrapper = outputEl.querySelector(".copy-action-wrapper");
+      const copyBtn = outputEl.querySelector(".copy-dialogue-btn");
+
       startThinking(contentEl);
 
       let streamStarted = false;
+      let content = "";
 
       try {
         const response = await fetch(WORKER_URL, {
@@ -430,7 +476,6 @@ if (!outputEl || !sendBtn) return;
         const reader  = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer  = "";
-        let content = "";
 
         while (true) {
           const { done, value } = await reader.read();
@@ -464,6 +509,38 @@ if (!outputEl || !sendBtn) return;
         if (!streamStarted) {
           stopThinking();
           contentEl.textContent = "No response came through. Try sending again.";
+        } else if (content) {
+          // Reveal the copy button securely once the response is fully generated
+          copyWrapper.style.opacity = "1";
+          copyWrapper.style.pointerEvents = "auto";
+
+          copyBtn.addEventListener("click", async () => {
+            const clipboardText = \`Q: \${query}\\n\\nA: \${content}\`;
+            try {
+              await navigator.clipboard.writeText(clipboardText);
+              
+              copyBtn.innerHTML = \`
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                <span>Copied!</span>
+              \`;
+              copyBtn.classList.add("success");
+              
+              setTimeout(() => {
+                copyBtn.innerHTML = \`
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                  </svg>
+                  <span>Copy Response</span>
+                \`;
+                copyBtn.classList.remove("success");
+              }, 2000);
+            } catch (err) {
+              console.error("Failed to copy", err);
+            }
+          });
         }
 
       } catch (err) {
