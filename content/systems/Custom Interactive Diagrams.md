@@ -6,4 +6,5 @@ ping_url:
 url:
 children:
 critical: false
+retired: true
 ---

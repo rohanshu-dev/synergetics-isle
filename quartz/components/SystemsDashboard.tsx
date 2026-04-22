@@ -479,7 +479,7 @@ SystemsDashboard.css = `
   gap: 6px;
 }
 .si-panel-name {
-  font-family: var(--headerFont);
+  font-family: var(--bodyFont);
   font-size: 12px;
   font-weight: 600;
   color: var(--dark);
@@ -506,7 +506,7 @@ SystemsDashboard.css = `
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-family: var(--codeFont);
+  font-family: var(--bodyFont);
   font-size: 11px;
   font-weight: 600;
   padding: 2px 8px;
@@ -546,7 +546,7 @@ SystemsDashboard.css = `
   font-size: 12px;
 }
 .si-summary-label {
-  font-weight: 500;
+  font-weight: 700;
 }
 .si-summary-divider {
   width: 1px;
@@ -639,7 +639,7 @@ SystemsDashboard.css = `
 }
 .si-panel-title-group { display: flex; flex-direction: column; gap: 4px; }
 .si-panel-name {
-  font-family: var(--headerFont); font-size: 12px; font-weight: 600;
+  font-family: var(--bodyFont); font-size: 12px; font-weight: 600;
   color: var(--dark); line-height: 1.2;
 }
 .si-attest { font-family: var(--bodyFont); font-size: 10px; font-weight: 500; line-height: 1; }
@@ -654,7 +654,7 @@ SystemsDashboard.css = `
 
 .si-item-row {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
-  padding: 3px 4px; min-height: 26px;
+  padding: 3px 4px; min-height: 32px;
   border-radius: var(--radius-sm, 3px);
   transition: background 0.1s ease;
 }
@@ -721,7 +721,7 @@ SystemsDashboard.css = `
 
 .si-badge {
   display: inline-flex; align-items: center; gap: 5px;
-  font-family: var(--codeFont); font-size: 10px; font-weight: 600;
+  font-family: var(--bodyFont); font-size: 10px; font-weight: 600;
   padding: 1px 5px; border-radius: 12px; letter-spacing: 0.04em; text-transform: uppercase;
   white-space: nowrap;
 }
@@ -781,6 +781,12 @@ SystemsDashboard.css = `
 .si-badge-inherited.si-badge-degraded .si-badge-dot-hollow {
   border: 1px solid #f97316;
 }
+  
+.si-fav {
+  margin: 0;
+  padding: 0;
+}
+
 `
 
 // ── Runtime ───────────────────────────────────────────────────────────────────

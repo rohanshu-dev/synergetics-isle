@@ -1,6 +1,7 @@
 ---
 title: Home
 ---
+
 The website, including this page, is still very much in-the-making. I wrote this up because an empty home page was getting cumbersome lol.
 
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:1.5rem 0">
@@ -26,5 +27,4 @@ Future:
 - **Community** — comments sections, Discord server for better discussions, etc.
 
 
-
-
+# Check site health at [[systems-stack |systems manifest]]
