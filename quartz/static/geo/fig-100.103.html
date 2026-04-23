@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Tetrahedron cuts · parallel & perpendicular planes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 0;
+            background: transparent;
+            overflow-x: hidden;
+            overflow-y: auto;
+            font-family: system-ui, 'Segoe UI', 'Roboto', sans-serif;
+            transition: background-color 0.2s ease;
+        }
+        .wrap {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 0;
+            padding: 0.75rem 0;
+            background: transparent;
+        }
+        figure { 
+            margin: 0; 
+            text-align: center; 
+            flex-shrink: 0; 
+            line-height: 0; 
+            background: transparent; 
+        }
+        canvas {
+            display: block;
+            background: transparent;
+            /* Removed box-shadow and border-radius to eliminate visual "pedestal" effect */
+            box-shadow: none;
+            border-radius: 0;
+            cursor: grab;
+        }
+        canvas:active { cursor: grabbing; }
+        @media (max-width: 550px) {
+            .wrap { flex-direction: column; gap: 1.5rem; }
+            figure { width: 100%; display: flex; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <figure><canvas id="tet-par" width="240" height="240"></canvas></figure>
+    <figure><canvas id="tet-perp" width="240" height="240"></canvas></figure>
+</div>
+
+<script>
+    (function() {
+        // ---------- IFRAME RESIZE (preserved) ----------
+        function sendHeightToParent() {
+            if (window.parent !== window) {
+                const height = document.body.scrollHeight;
+                window.parent.postMessage({ type: 'iframeResize', height: height }, '*');
+                try {
+                    const iframes = window.parent.document.querySelectorAll('iframe');
+                    for (let iframe of iframes) {
+                        if (iframe.contentWindow === window) {
+                            iframe.style.height = height + 'px';
+                            break;
+                        }
+                    }
+                } catch(e) { /* cross-origin fallback */ }
+            }
+        }
+        const resizeObserver = new ResizeObserver(() => sendHeightToParent());
+        resizeObserver.observe(document.body);
+        window.addEventListener('load', sendHeightToParent);
+        const layoutObserver = new MutationObserver(() => sendHeightToParent());
+        layoutObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+        sendHeightToParent();
+
+        // ---------- GEOMETRY (exact same robust tetrahedron) ----------
+        const s = 58;               // slightly larger for better visibility
+        const V = [[ s,  s,  s], [ s, -s, -s], [-s,  s, -s], [-s, -s,  s]];
+        const edges = [[0,1], [0,2], [0,3], [1,2], [1,3], [2,3]];
+        const faces = [[0,1,2], [0,1,3], [0,2,3], [1,2,3]];
+        const mid = (a, b) => [(a[0]+b[0])/2, (a[1]+b[1])/2, (a[2]+b[2])/2];
+        const eps = 1e-8;
+
+        // ----- PARALLEL CUT: plane y = 0 (parallel to XZ plane) -----
+        const parNormal = [0, 1, 0];
+        const parD = 0;
+
+        // ----- PERPENDICULAR CUT: rotate tetrahedron 45° around X, then plane through opposite edge midpoints -----
+        const cos45 = Math.cos(Math.PI/4), sin45 = Math.sin(Math.PI/4);
+        const preRotX = v => [v[0], v[1]*cos45 - v[2]*sin45, v[1]*sin45 + v[2]*cos45];
+        const V_perp = V.map(preRotX);
+        
+        const edgeStart = V_perp[0], edgeEnd = V_perp[1];
+        const oppMid = mid(V_perp[2], V_perp[3]);
+        const v1 = [edgeEnd[0]-edgeStart[0], edgeEnd[1]-edgeStart[1], edgeEnd[2]-edgeStart[2]];
+        const v2 = [oppMid[0]-edgeStart[0], oppMid[1]-edgeStart[1], oppMid[2]-edgeStart[2]];
+        let rawNorm = [v1[1]*v2[2] - v1[2]*v2[1], v1[2]*v2[0] - v1[0]*v2[2], v1[0]*v2[1] - v1[1]*v2[0]];
+        const len = Math.hypot(...rawNorm);
+        const perpNormal = [rawNorm[0]/len, rawNorm[1]/len, rawNorm[2]/len];
+        const perpD = perpNormal[0]*edgeStart[0] + perpNormal[1]*edgeStart[1] + perpNormal[2]*edgeStart[2];
+
+        // ----- helper: intersection point between edge and plane -----
+        function intersectEdgePlane(p1, p2, N, D) {
+            const val1 = N[0]*p1[0] + N[1]*p1[1] + N[2]*p1[2] - D;
+            const val2 = N[0]*p2[0] + N[1]*p2[1] + N[2]*p2[2] - D;
+            if (val1 * val2 > eps) return null;
+            if (Math.abs(val1) < eps && Math.abs(val2) < eps) return null;
+            if (Math.abs(val1) < eps) return [p1[0], p1[1], p1[2]];
+            if (Math.abs(val2) < eps) return [p2[0], p2[1], p2[2]];
+            const t = -val1 / (val2 - val1);
+            return [p1[0] + t*(p2[0]-p1[0]), p1[1] + t*(p2[1]-p1[1]), p1[2] + t*(p2[2]-p1[2])];
+        }
+
+        // ----- build convex intersection polygon (sorted) -----
+        function getIntersectionPolygon(verts, edgeList, N, D) {
+            let points = [];
+            for (let v of verts) if (Math.abs(N[0]*v[0] + N[1]*v[1] + N[2]*v[2] - D) < eps) points.push([v[0], v[1], v[2]]);
+            for (let e of edgeList) {
+                const hit = intersectEdgePlane(verts[e[0]], verts[e[1]], N, D);
+                if (hit) points.push(hit);
+            }
+            if (points.length < 3) return [];
+            let unique = [];
+            for (let p of points) {
+                if (!unique.some(q => Math.hypot(p[0]-q[0], p[1]-q[1], p[2]-q[2]) < 1e-6)) unique.push(p);
+            }
+            if (unique.length < 3) return [];
+            let cen = [0,0,0];
+            for (let p of unique) { cen[0]+=p[0]; cen[1]+=p[1]; cen[2]+=p[2]; }
+            cen = [cen[0]/unique.length, cen[1]/unique.length, cen[2]/unique.length];
+            const [nx,ny,nz] = N;
+            let aux = [1,0,0];
+            if (Math.abs(nx) > 0.85) aux = [0,1,0];
+            let ux = ny*aux[2] - nz*aux[1], uy = nz*aux[0] - nx*aux[2], uz = nx*aux[1] - ny*aux[0];
+            const ulen = Math.hypot(ux, uy, uz);
+            if (ulen > 1e-8) { ux/=ulen; uy/=ulen; uz/=ulen; } else { ux=1; uy=0; uz=0; }
+            let vx = uy*nz - uz*ny, vy = uz*nx - ux*nz, vz = ux*ny - uy*nx;
+            unique.sort((a,b) => {
+                const da = [a[0]-cen[0], a[1]-cen[1], a[2]-cen[2]];
+                const db = [b[0]-cen[0], b[1]-cen[1], b[2]-cen[2]];
+                const angleA = Math.atan2(da[0]*vx+da[1]*vy+da[2]*vz, da[0]*ux+da[1]*uy+da[2]*uz);
+                const angleB = Math.atan2(db[0]*vx+db[1]*vy+db[2]*vz, db[0]*ux+db[1]*uy+db[2]*uz);
+                return angleA - angleB;
+            });
+            return unique;
+        }
+
+        // rotation helpers
+        function rotateY(p, angle) { const c=Math.cos(angle), s=Math.sin(angle); return [p[0]*c + p[2]*s, p[1], -p[0]*s + p[2]*c]; }
+        function rotateX(p, angle) { const c=Math.cos(angle), s=Math.sin(angle); return [p[0], p[1]*c - p[2]*s, p[1]*s + p[2]*c]; }
+
+        // ---------- READ COLOR VARIABLES FROM PARENT (Quartz CSS) ----------
+        function getParentColor(varName) {
+            try {
+                const parentHtml = parent.document.documentElement;
+                const color = getComputedStyle(parentHtml).getPropertyValue(varName).trim();
+                if (color) return color;
+                // fallback according to Quartz light/dark defaults (ensuring visibility)
+                if (varName === '--light') return '#faf8f8';
+                if (varName === '--dark') return '#2b2b2b';
+                if (varName === '--gray') return '#b8b8b8';
+                if (varName === '--secondary') return '#284b63';
+                if (varName === '--tertiary') return '#84a59d';
+                return '#cccccc';
+            } catch(e) {
+                // safe standalone fallback (readable)
+                if (varName === '--light') return '#faf8f8';
+                if (varName === '--dark') return '#2b2b2b';
+                if (varName === '--gray') return '#b8b8b8';
+                if (varName === '--secondary') return '#284b63';
+                if (varName === '--tertiary') return '#84a59d';
+                return '#888888';
+            }
+        }
+
+        // watch parent theme changes (light/dark class)
+        function watchParentTheme(callback) {
+            try {
+                const parentHtml = parent.document.documentElement;
+                const observer = new MutationObserver(callback);
+                observer.observe(parentHtml, { attributes: true, attributeFilter: ['class'] });
+                callback();
+            } catch(e) { /* fallback: no observer needed */ }
+        }
+
+        // ---------- IMPROVED TETRA VIEWER (colors & edge visibility fixed; removed pedestal effect; longer axis) ----------
+        class TetraViewer {
+            constructor(canvasId, baseVertices, planeNormal, planeD, initialYaw = 0, initialPitch = 0.2, preTransform = null, customAxis = null) {
+                this.canvas = document.getElementById(canvasId);
+                if (!this.canvas) return;
+                this.ctx = this.canvas.getContext('2d');
+                this.w = this.canvas.width;
+                this.h = this.canvas.height;
+                this.cx = this.w/2;
+                this.cy = this.h/2;
+                this.baseVertices = baseVertices;
+                this.planeNormal = planeNormal;
+                this.planeD = planeD;
+                
+                // build axis indicator (line through the plane normal direction)
+                // ENHANCEMENT: axis length increased for better visibility (from ~144 to 200)
+                let axisStart, axisEnd;
+                if (customAxis) {
+                    axisStart = customAxis[0];
+                    axisEnd   = customAxis[1];
+                    if (preTransform) {
+                        axisStart = preTransform(axisStart);
+                        axisEnd   = preTransform(axisEnd);
+                    }
+                } else {
+                    // Default axis: Y direction (plane normal for parallel cut) - now longer: from -100 to 100
+                    let start = [0, -100, 0];
+                    let end   = [0,  100, 0];
+                    if (preTransform) {
+                        start = preTransform(start);
+                        end   = preTransform(end);
+                    }
+                    axisStart = start;
+                    axisEnd   = end;
+                }
+                this.axisWorld = [axisStart, axisEnd];
+                
+                this.rotY = initialYaw;
+                this.rotX = initialPitch;
+                this.autoRotate = true;
+                this.idleTimer = null;
+                this.IDLE_DELAY = 2400;
+                this.dragging = false;
+                this.lastX = this.lastY = 0;
+                this.startRotY = this.startRotX = 0;
+                
+                this.bindEvents();
+                this.animate();
+            }
+
+            bindEvents() {
+                const handleDown = (e) => {
+                    e.preventDefault();
+                    this.dragging = true;
+                    const client = e.touches ? e.touches[0] : e;
+                    this.lastX = client.clientX;
+                    this.lastY = client.clientY;
+                    this.startRotY = this.rotY;
+                    this.startRotX = this.rotX;
+                    this.resetIdleTimer();
+                };
+                const handleMove = (e) => {
+                    if (!this.dragging) return;
+                    e.preventDefault();
+                    const client = e.touches ? e.touches[0] : e;
+                    const dx = client.clientX - this.lastX;
+                    const dy = client.clientY - this.lastY;
+                    if (dx !== 0 || dy !== 0) {
+                        this.rotY = this.startRotY + dx * 0.009;
+                        this.rotX = this.startRotX + dy * 0.009;
+                        this.rotX = Math.min(Math.PI/2.2, Math.max(-Math.PI/2.2, this.rotX));
+                    }
+                };
+                const handleUp = () => { this.dragging = false; };
+                this.canvas.addEventListener('mousedown', handleDown);
+                window.addEventListener('mousemove', handleMove);
+                window.addEventListener('mouseup', handleUp);
+                this.canvas.addEventListener('touchstart', handleDown, { passive: false });
+                window.addEventListener('touchmove', handleMove, { passive: false });
+                window.addEventListener('touchend', handleUp);
+                this.resetIdleTimer = () => {
+                    if (this.idleTimer) clearTimeout(this.idleTimer);
+                    if (this.autoRotate) this.autoRotate = false;
+                    this.idleTimer = setTimeout(() => { this.autoRotate = true; }, this.IDLE_DELAY);
+                };
+            }
+
+            animate() {
+                if (this.autoRotate) this.rotY += 0.006;
+                
+                const { ctx, w, h, cx, cy, rotY, rotX, baseVertices, planeNormal, planeD, axisWorld } = this;
+                
+                // ---- get current theme colors from parent (Quartz variables) ----
+                const lightBg = getParentColor('--light');     // body background
+                const darkEdge = getParentColor('--dark');     // strong front edges
+                const graySoft = getParentColor('--gray');     // back edges & axis
+                const secondaryFill = getParentColor('--secondary'); // tetrahedron faces
+                const tertiaryPlane = getParentColor('--tertiary');   // cutting plane fill
+                
+                // update body background (sync with theme) — ensures canvas blends seamlessly
+                document.body.style.backgroundColor = lightBg;
+                
+                ctx.clearRect(0, 0, w, h);
+                
+                // --- transform vertices to camera space ---
+                const rotatedVerts = baseVertices.map(v => rotateX(rotateY(v, rotY), rotX));
+                const proj = rotatedVerts.map(v => [cx + v[0], cy - v[1]]);
+                
+                // intersection polygon in world, then rotated & projected
+                const polyWorld = getIntersectionPolygon(baseVertices, edges, planeNormal, planeD);
+                const rotatedPoly = polyWorld.map(p => {
+                    let r = rotateY(p, rotY);
+                    r = rotateX(r, rotX);
+                    return [cx + r[0], cy - r[1]];
+                });
+                
+                // depth sorting for faces (back-to-front)
+                const facesWithZ = faces.map(face => {
+                    const avgZ = (rotatedVerts[face[0]][2] + rotatedVerts[face[1]][2] + rotatedVerts[face[2]][2]) / 3;
+                    return { face, z: avgZ };
+                }).sort((a,b) => a.z - b.z);
+                
+                // ---------- 1) BACK FACES (very subtle, low opacity) ----------
+                ctx.globalAlpha = 0.12;
+                for (let item of facesWithZ) if (item.z < 0) {
+                    const f = item.face;
+                    ctx.beginPath();
+                    ctx.moveTo(proj[f[0]][0], proj[f[0]][1]);
+                    ctx.lineTo(proj[f[1]][0], proj[f[1]][1]);
+                    ctx.lineTo(proj[f[2]][0], proj[f[2]][1]);
+                    ctx.closePath();
+                    ctx.fillStyle = secondaryFill;
+                    ctx.fill();
+                }
+                
+                // ---------- 2) BACK EDGES (dashed, gray, improved visibility) ----------
+                ctx.setLineDash([6, 5]);
+                ctx.globalAlpha = 0.75;
+                ctx.lineWidth = 1.4;
+                for (let e of edges) {
+                    const a = rotatedVerts[e[0]], b = rotatedVerts[e[1]];
+                    // only edges fully behind (both vertices have negative Z) — but crossing edges appear as front edges.
+                    if (a[2] > 0 || b[2] > 0) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(proj[e[0]][0], proj[e[0]][1]);
+                    ctx.lineTo(proj[e[1]][0], proj[e[1]][1]);
+                    ctx.strokeStyle = graySoft;
+                    ctx.stroke();
+                }
+                ctx.setLineDash([]);
+                
+                // ---------- 3) CUTTING PLANE FILL (translucent tertiary) ----------
+                if (rotatedPoly.length >= 3) {
+                    ctx.globalAlpha = 0.48;
+                    ctx.beginPath();
+                    ctx.moveTo(rotatedPoly[0][0], rotatedPoly[0][1]);
+                    for (let i=1; i<rotatedPoly.length; i++) ctx.lineTo(rotatedPoly[i][0], rotatedPoly[i][1]);
+                    ctx.closePath();
+                    ctx.fillStyle = tertiaryPlane;
+                    ctx.fill();
+                }
+                
+                // ---------- 4) FRONT FACES (medium transparency, secondary color) ----------
+                ctx.globalAlpha = 0.32;
+                for (let item of facesWithZ) if (item.z >= 0) {
+                    const f = item.face;
+                    ctx.beginPath();
+                    ctx.moveTo(proj[f[0]][0], proj[f[0]][1]);
+                    ctx.lineTo(proj[f[1]][0], proj[f[1]][1]);
+                    ctx.lineTo(proj[f[2]][0], proj[f[2]][1]);
+                    ctx.closePath();
+                    ctx.fillStyle = secondaryFill;
+                    ctx.fill();
+                }
+                
+                // ---------- 5) PLANE STROKE (bold, high contrast, drawn over front faces) ----------
+                if (rotatedPoly.length >= 3) {
+                    ctx.globalAlpha = 0.95;
+                    ctx.beginPath();
+                    ctx.moveTo(rotatedPoly[0][0], rotatedPoly[0][1]);
+                    for (let i=1; i<rotatedPoly.length; i++) ctx.lineTo(rotatedPoly[i][0], rotatedPoly[i][1]);
+                    ctx.closePath();
+                    ctx.strokeStyle = darkEdge;
+                    ctx.lineWidth = 2.2;
+                    ctx.stroke();
+                }
+                
+                // ---------- 6) FRONT EDGES (solid, crisp dark, above all fills) ----------
+                ctx.globalAlpha = 1.0;
+                ctx.lineWidth = 2.0;
+                ctx.setLineDash([]);
+                for (let e of edges) {
+                    const a = rotatedVerts[e[0]], b = rotatedVerts[e[1]];
+                    // draw edge if at least one vertex is in front (z >= 0) or if it crosses the plane (front part)
+                    if (a[2] <= 0 && b[2] <= 0) continue;
+                    ctx.beginPath();
+                    ctx.moveTo(proj[e[0]][0], proj[e[0]][1]);
+                    ctx.lineTo(proj[e[1]][0], proj[e[1]][1]);
+                    ctx.strokeStyle = darkEdge;
+                    ctx.stroke();
+                }
+                
+                // ---------- 7) AXIS INDICATOR (longer, dashed, consistent gray, always visible) ----------
+                const axisProjStart = (() => { 
+                    let r = rotateY(axisWorld[0], rotY); 
+                    r = rotateX(r, rotX); 
+                    return [cx + r[0], cy - r[1]]; 
+                })();
+                const axisProjEnd = (() => { 
+                    let r = rotateY(axisWorld[1], rotY); 
+                    r = rotateX(r, rotX); 
+                    return [cx + r[0], cy - r[1]]; 
+                })();
+                ctx.globalAlpha = 0.9;
+                ctx.beginPath();
+                ctx.moveTo(axisProjStart[0], axisProjStart[1]);
+                ctx.lineTo(axisProjEnd[0], axisProjEnd[1]);
+                ctx.strokeStyle = graySoft;
+                ctx.lineWidth = 2.0;
+                ctx.setLineDash([8, 6]);
+                ctx.stroke();
+                // axis endpoints (small dots)
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.arc(axisProjStart[0], axisProjStart[1], 3.2, 0, 2*Math.PI);
+                ctx.fillStyle = graySoft;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(axisProjEnd[0], axisProjEnd[1], 3.2, 0, 2*Math.PI);
+                ctx.fill();
+                
+                // reset transparency and dashes
+                ctx.globalAlpha = 1.0;
+                ctx.setLineDash([]);
+                
+                requestAnimationFrame(() => this.animate());
+            }
+        }
+        
+        // ----- INIT VIEWERS (parallel and perpendicular) -----
+        // Parallel cut: natural tetrahedron, plane y=0, axis is Y direction (up/down) — now longer (already increased in constructor)
+        new TetraViewer('tet-par', V, parNormal, parD, 0.55, 0.22, null, null);
+        
+        // Perpendicular cut: rotated tetrahedron, plane defined by normal through opposite edges
+        // Custom axis along that normal to emphasize perpendicular orientation — length increased to 200 (from 74)
+        const axisLen = 100;        // increased: total length 200 (from 148 previously)
+        const axisStartPerp = [ perpNormal[0] * axisLen, perpNormal[1] * axisLen, perpNormal[2] * axisLen ];
+        const axisEndPerp   = [ -perpNormal[0] * axisLen, -perpNormal[1] * axisLen, -perpNormal[2] * axisLen ];
+        const customAxisPerp = [axisStartPerp, axisEndPerp];
+        new TetraViewer('tet-perp', V_perp, perpNormal, perpD, -0.48, 0.27, null, customAxisPerp);
+        
+        // watch parent theme changes to refresh background (colors are read per frame already, but ensure body style sync)
+        watchParentTheme(() => {
+            document.body.style.backgroundColor = getParentColor('--light');
+            sendHeightToParent();
+        });
+        
+        // small additional fix: ensure canvases blend with parent background (no residual border/pedestal)
+        // canvas styling already removes box-shadow and border-radius.
+    })();
+</script>
+</body>
+</html>
