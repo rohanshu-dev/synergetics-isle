@@ -27,4 +27,8 @@ Future:
 - **Community** — comments sections, Discord server for better discussions, etc.
 
 
-# Check site health at [[systems-stack |systems manifest]]
+# Site Health
+
+<a href="/systems-stack" style="display: inline-block; background: var(--secondary); color: var(--light); padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
+  Systems Manifest ->
+</a>
