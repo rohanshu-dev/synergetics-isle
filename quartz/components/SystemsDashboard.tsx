@@ -383,7 +383,7 @@ const Panel = ({ root }: { root: SystemNode }) => {
 // ── Main Component ───────────────────────────────────────────────────────────
 
 const SystemsDashboard: QuartzComponent = ({ fileData, allFiles }: QuartzComponentProps) => {
-  if (fileData.slug !== "systems-stack") return null
+  //if (fileData.slug !== "systems-stack") return null
 
   const roots = buildTree(allFiles)
   const severityOf = (n: SystemNode) => {

@@ -56,6 +56,10 @@ export const sharedPageComponents: SharedLayout = {
       component: Component.SynergeticsAI(),
       condition: (page) => page.fileData.slug === "synergetics-ai",
     }),
+    Component.ConditionalRender({
+      component: Component.VaultAudit(),
+      condition: (page) => page.fileData.slug === "synergetics-verification",
+    }),
   ],
   footer: Component.Footer({
     links: {
