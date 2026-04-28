@@ -1,5 +1,5 @@
 // quartz/components/VaultAudit.tsx
-import vaultAudit from "../../static/vault-audit.json"
+import vaultAudit from "../../quartz/static/data/vault-audit.json"
 import { QuartzComponent, QuartzComponentConstructor, QuartzComponentProps } from "./types"
 
 interface AuditEntry { [key: string]: number }

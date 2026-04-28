@@ -21,7 +21,7 @@ const grayMatter = require('gray-matter');
 // ------------------------------------------------------------------
 const CONFIG = {
   contentDir: "content",
-  outputFile: "static/vault-audit.json",
+  outputFile: "quartz/static/data/vault-audit.json",
   booleanProps: [
     "m-replication", "m-headings", "m-emDash", "m-italics",
     "m-images", "m-links", "m-equations", "m-links-2",
