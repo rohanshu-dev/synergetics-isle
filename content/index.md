@@ -42,7 +42,7 @@ Future:
 
 # Check Roadmap/What's done
 <a href="/trends-manifest" style="display: inline-block; background: var(--secondary); color: var(--light); padding: 8px 20px; border-radius: 6px; text-decoration: none; font-weight: 500;">
-  Synergetics Proofreading Audit ->
+  Trends Manifest ->
 </a>
 
 
