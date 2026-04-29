@@ -27,6 +27,7 @@ import SynergeticsAI from "./SynergeticsAI"
 import AIButton from "./AIButton"
 import SystemsDashboard from "./SystemsDashboard"
 import FrontmatterAudit from "./FrontmatterAudit"
+import TrendsManifest from "./TrendsManifest"
 
 export {
   ArticleTitle,
@@ -58,4 +59,5 @@ export {
   AIButton,
   SystemsDashboard,
   FrontmatterAudit,
+  TrendsManifest,
 }

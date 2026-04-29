@@ -84,6 +84,10 @@ export const defaultContentPageLayout: PageLayout = {
       component: Component.SystemsDashboard(),
       condition: (page) => page.fileData.slug === "systems-stack",
     }),
+        Component.ConditionalRender({
+      component: Component.TrendsManifest(),
+      condition: (page) => page.fileData.slug === "trends-manifest",
+    }),
   ],
   left: [
     Component.PageTitle(),
