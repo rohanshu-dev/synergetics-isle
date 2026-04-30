@@ -1,6 +1,3 @@
----
-order: "3"
----
 
 ##### 000.100
 Introduction to [[10 Color Posters]]
