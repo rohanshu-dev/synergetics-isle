@@ -1,3 +1,15 @@
+---
+p-replication: false
+p-emDash: false
+p-headings: false
+p-italics: false
+p-images: false
+p-links: false
+p-equations: false
+p-structure: false
+p-links-2: false
+e-issues:
+---
 Synergetics 1 and Synergetics 2 are separate volumes only because of their bulk and the chronology of their composition. They in fact comprise a single integral work. Each chapter in the first volume has been expanded in the second, and the sequence of paragraphs has been numbered to dovetail and provide a shared context. 
 
 It is the essence of synergy to produce unpredicted-indeed, unpredictable-results like the surprise geometrical discoveries of this second volume. Synergetics 2 continues the exposition of Fuller's radical geometrical cosmos with its landscapes of unfamiliar models and metaphors; it amplifies and amends-but does not supersede-the earlier volume published in 1975; it makes more explicit the significance of certain geometrical functions that are only implicit in Synergetics 1; and it introduces the term epistemography to describe Fuller's geometry of thinking. The two books together present descriptions that are explicit as well as contextual. 

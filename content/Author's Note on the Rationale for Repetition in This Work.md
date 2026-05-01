@@ -1,3 +1,15 @@
+---
+p-replication: false
+p-emDash: false
+p-headings: false
+p-italics: false
+p-images: false
+p-links: false
+p-equations: false
+p-structure: false
+p-links-2: false
+e-issues:
+---
 It is the writer's experience that new degrees of comprehension are always and only consequent to ever-renewed review of the spontaneously rearranged inventory of significant factors. This awareness of the processes leading to new degrees of comprehension spontaneously motivates the writer to describe over and over again what-to the careless listener or reader-might seem to be tiresome repetition, but to the successful explorer is known to be essential mustering of operational strategies from which alone new thrusts of comprehension can be successfully accomplished. 
 
 To the careless reader seeking only entertainment the repetition will bring about swift disconnect. Those experienced with the writer and motivated by personal experience with mental discoveries-co-experiencing comprehensive breakthroughs with the writer-are not dismayed by the seeming necessity to start all over again inventorying the now seemingly most lucidly relevant. 

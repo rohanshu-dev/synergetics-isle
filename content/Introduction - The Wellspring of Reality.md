@@ -1,3 +1,15 @@
+---
+p-replication: false
+p-emDash: false
+p-headings: false
+p-italics: false
+p-images: false
+p-links: false
+p-equations: false
+p-structure: false
+p-links-2: false
+e-issues:
+---
 
 We are in an age that assumes the narrowing trends of specialization to be logical, natural, and desirable. Consequently, society expects all earnestly responsible communication to be crisply brief. Advancing science has now discovered that all the known cases of biological extinction have been caused by overspecialization, whose concentration of only selected genes sacrifices general adaptability. Thus the specialist's brief for pinpointing brevity is dubious. In the meantime, humanity has been deprived of comprehensive understanding. Specialization has bred feelings of isolation, futility, and confusion in individuals. It has also resulted in the individual's leaving responsibility for thinking and social action to others. Specialization breeds biases that ultimately aggregate as international and ideological discord, which, in turn, leads to war. 
 

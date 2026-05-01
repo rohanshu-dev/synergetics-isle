@@ -1,3 +1,15 @@
+---
+p-replication: false
+p-emDash: false
+p-headings: false
+p-italics: false
+p-images: false
+p-links: false
+p-equations: false
+p-structure: false
+p-links-2: false
+e-issues:
+---
 
 ![[Color Plate - 1.png|100]]
 ![[Color Plate - 2.png|100]]

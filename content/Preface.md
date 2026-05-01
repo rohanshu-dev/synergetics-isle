@@ -1,3 +1,15 @@
+---
+p-replication: false
+p-emDash: false
+p-headings: false
+p-italics: false
+p-images: false
+p-links: false
+p-equations: false
+p-structure: false
+p-links-2: false
+e-issues:
+---
 **by A. Loeb**
 
 The appearance of this sizable book is symptomatic of a considerable revival of interest in geometrics, a science of configurations. Configurations observed in the sky constitute the laboratory of our oldest science, astronomy. Patterns and regularities were discerned, and speculations regarding the influence of celestial configurations on terrestrial existence gave rise to scientific as well as mystical systems of natural philosophy. The dividing line between these two is at times surprisingly diffuse, and varies throughout history. 
