@@ -23,9 +23,15 @@ const CONFIG = {
   contentDir: "content",
   outputFile: "quartz/static/data/frontmatter-audit.json",
   booleanProps: [
-    "m-replication", "m-headings", "m-emDash", "m-italics",
-    "m-images", "m-links", "m-equations", "m-links-2",
-    "structure", "m-proofread"
+    "p-replication",
+    "p-emDash",
+    "p-headings",
+    "p-italics",
+    "p-images",
+    "p-links",
+    "p-equations",
+    "p-structure",
+    "p-links-2"
   ],
   exclusions: [],
   groups: {
@@ -74,7 +80,7 @@ function findMarkdownFiles(dir) {
 function scanEntry(entryName) {
   const basePath = path.join(CONFIG.contentDir, entryName);
   const filePath = basePath + '.md';
-  const dirPath  = basePath;
+  const dirPath = basePath;
 
   let mdFiles = [];
 
