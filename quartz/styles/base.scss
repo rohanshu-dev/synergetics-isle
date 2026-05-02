@@ -25,6 +25,7 @@
   --sp-sm: 0.618rem;
   --sp-md: 1rem;
   --sp-lg: 1.618rem;
+  --sp-xl-minus: 2.058rem;
   --sp-xl: 2.618rem;
   --sp-2xl: 4.236rem;
   --sp-3xl: 6.854rem;
@@ -317,7 +318,7 @@ a {
       gap: var(--sp-lg);
       top: 0;
       box-sizing: border-box;
-      padding: $topSpacing var(--sp-lg) var(--sp-xl) var(--sp-lg);
+      padding: $topSpacing var(--sp-xl-minus) var(--sp-xl) var(--sp-xl-minus);
       display: flex;
       height: 100vh;
       position: sticky;
@@ -530,7 +531,7 @@ h1 {
 }
 
 h2 {
-  font-size: var(--text-lg);  // power 1
+  font-size: var(--text-lg); // power 1
   line-height: var(--lh-tight);
   margin-top: var(--sp-xl); // 2.618rem — φ²
   margin-bottom: var(--sp-sm); // 0.618rem — φ⁻¹

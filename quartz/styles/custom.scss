@@ -196,41 +196,55 @@
 // φ⁻² = 0.382 → thumb at rest | φ⁻¹ = 0.618 → thumb on hover
 // 8px track, 5px thumb, 3px radius — each one φ step from the last
 
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+
+/* Page root — overlay via margin trick, thin and slightly more visible */
 html {
-    overflow-y: scroll;
-    scrollbar-gutter: stable;
+  overflow-y: auto;
+  margin-right: calc(100% - 100vw);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
 }
 
-::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
+html::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+html::-webkit-scrollbar { width: 8px; }
+html::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.55);
+  border-radius: 10px;
+}
+html::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.75);
+}
+
+/* Inner scrollable elements — same width, fades in on hover */
+*:not(html) {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+*:not(html):hover {
+  scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
+}
+*:not(html)::-webkit-scrollbar { width: 8px; }
+*:not(html)::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+*:not(html):hover::-webkit-scrollbar-thumb {
+  background: rgba(128, 128, 128, 0.55);
+}
+*:not(html)::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 128, 128, 0.75);
 }
 
 
-::-webkit-scrollbar-track {
-    background: transparent;
-}
 
-::-webkit-scrollbar-thumb {
-    background: rgba(128, 128, 128, 0.382);
-    border-radius: 4px;
-    border: 2px solid transparent; // scaled from 1.5
-    background-clip: padding-box;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(128, 128, 128, 0.618);
-    background-clip: padding-box;
-}
-
-::-webkit-scrollbar-corner {
-    background: transparent;
-}
-
-* {
-    scrollbar-width: thin;
-    scrollbar-color: rgba(128, 128, 128, 0.382) transparent;
-}
 
 // ---------------------------------------------------------------------
 
@@ -330,3 +344,4 @@ html {
 
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
+
