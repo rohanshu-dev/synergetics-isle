@@ -175,7 +175,25 @@
 
 // Adjusting Literta to be as big as Inter for the same on-paper font size
 #quartz-body a.folder-title {
-    font-size: 1.05rem;
+    font-size: 1.0618rem;
+}
+#quartz-body h5 {
+    font-size: 1.0618rem;
+}
+
+div.left.sidebar h1,
+div.left.sidebar h2,
+div.left.sidebar h3,
+div.left.sidebar h4,
+div.left.sidebar h5,
+div.left.sidebar h6,
+div.right.sidebar h1,
+div.right.sidebar h2,
+div.right.sidebar h3,
+div.right.sidebar h4,
+div.right.sidebar h5,
+div.right.sidebar h6 {
+  font-size: 1.0618rem;
 }
 
 // p, li {
