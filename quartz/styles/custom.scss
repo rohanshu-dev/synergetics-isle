@@ -263,7 +263,7 @@ html {
 
 #quartz-body h1.article-title {
     font-size: var(--text-xl);
-    font-weight: 600;
+    font-weight: 400;
 }
 
 #quartz-body h1,
@@ -272,7 +272,12 @@ html {
 #quartz-body h4,
 #quartz-body h5,
 #quartz-body h6 {
-    font-weight: 600;
+    font-weight: 400;
+}
+
+#quartz-body h5{
+    font-family: var(--codeFont);
+    font-weight: 700;
 }
 
 // #quartz-body h5{
