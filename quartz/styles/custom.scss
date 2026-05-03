@@ -92,19 +92,23 @@
 //     //color: #6D0015; //color of the original synergetics 1 book
 // }
 
-// on mobile, this font was rearranging the layout, so restricting it to desktop
-@media all and (min-width: 801px) {
-    .page-title a {
-        font-size: 2.618rem;
-    }
-}
+
 
 .page-title a {
     // font-weight: 400;
     // -webkit-text-stroke: 1px currentColor;
     // paint-order: stroke fill;
     letter-spacing: -2.618px;
+    font-size: 1.618rem;
 }
+
+/* Base mobile styles */
+.page-title a {
+    font-size: 1.618rem;
+    letter-spacing: -2.618px;
+}
+
+
 
 // font-size: 3.236rem, 2.618rem, 2.058rem;
 
@@ -180,6 +184,7 @@
 #quartz-body a.folder-title {
     font-size: 1.0618rem;
 }
+
 #quartz-body h5 {
     font-size: 1.0618rem;
 }
@@ -196,7 +201,14 @@ div.right.sidebar h3,
 div.right.sidebar h4,
 div.right.sidebar h5,
 div.right.sidebar h6 {
-  font-size: 1.0618rem;
+    font-size: 1.0618rem;
+}
+
+// the sidebar heading css was making the title smaller too
+@media all and (min-width: 801px) {
+    .page-title a {
+        font-size: 2.618rem;
+    }
 }
 
 // p, li {
@@ -222,46 +234,57 @@ div.right.sidebar h6 {
 
 /* Page root — overlay via margin trick, thin and slightly more visible */
 html {
-  overflow-y: auto;
-  margin-right: calc(100% - 100vw);
-  scrollbar-width: thin;
-  scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
+    overflow-y: auto;
+    margin-right: calc(100% - 100vw);
+    scrollbar-width: thin;
+    scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
 }
 
 html::-webkit-scrollbar-button {
-  display: none;
-  height: 0;
-  width: 0;
+    display: none;
+    height: 0;
+    width: 0;
 }
 
-html::-webkit-scrollbar { width: 8px; }
-html::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.55);
-  border-radius: 10px;
+html::-webkit-scrollbar {
+    width: 8px;
 }
+
+html::-webkit-scrollbar-thumb {
+    background: rgba(128, 128, 128, 0.55);
+    border-radius: 10px;
+}
+
 html::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.75);
+    background: rgba(128, 128, 128, 0.75);
 }
 
 /* Inner scrollable elements — same width, fades in on hover */
 *:not(html) {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
 }
+
 *:not(html):hover {
-  scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
+    scrollbar-color: rgba(128, 128, 128, 0.55) transparent;
 }
-*:not(html)::-webkit-scrollbar { width: 8px; }
+
+*:not(html)::-webkit-scrollbar {
+    width: 8px;
+}
+
 *:not(html)::-webkit-scrollbar-thumb {
-  background: transparent;
-  border-radius: 10px;
-  transition: background 0.2s ease;
+    background: transparent;
+    border-radius: 10px;
+    transition: background 0.2s ease;
 }
+
 *:not(html):hover::-webkit-scrollbar-thumb {
-  background: rgba(128, 128, 128, 0.55);
+    background: rgba(128, 128, 128, 0.55);
 }
+
 *:not(html)::-webkit-scrollbar-thumb:hover {
-  background: rgba(128, 128, 128, 0.75);
+    background: rgba(128, 128, 128, 0.75);
 }
 
 
@@ -310,59 +333,60 @@ html::-webkit-scrollbar-thumb:hover {
 // -------------------------------------------------------------------------
 
 .flex-component {
-  display: flex;
-  align-items: center;
+    display: flex;
+    align-items: center;
 }
 
 // Search: hide text label on mobile, keep icon only
 @media all and ($mobile) {
-  .search .search-button > p {
-    display: none;
-  }
-
-  .search .search-button {
-    padding: 0;
-    width: 2rem;
-    border: none;
-    margin-right: -4px;
-    margin-bottom: -2px;
-  }
-
-  .search-button svg .search-path {
-    path, circle {
-      stroke-width: 2px;
+    .search .search-button>p {
+        display: none;
     }
-  }
+
+    .search .search-button {
+        padding: 0;
+        width: 2rem;
+        border: none;
+        margin-right: -4px;
+        margin-bottom: -2px;
+    }
+
+    .search-button svg .search-path {
+
+        path,
+        circle {
+            stroke-width: 2px;
+        }
+    }
 }
 
 // AI pill: center text
 .ai-button .ai-pill {
-  text-indent: 0.08em;
-  margin-bottom: -2px;
+    text-indent: 0.08em;
+    margin-bottom: -2px;
 }
 
 // trying to fix the ai button and site title retaining focus on a mobile even AFTER being tapped
 * {
-  -webkit-tap-highlight-color: transparent;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .ai-button:active {
-  color: inherit;
+    color: inherit;
 }
 
 // Darkmode + readermode: proper flex centering instead of absolute positioning
 .readermode,
 .darkmode {
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-  & svg {
-    position: static;
-    top: unset;
-  }
+    & svg {
+        position: static;
+        top: unset;
+    }
 }
 
 // -------------------------------------------------------------------------
 // -------------------------------------------------------------------------
-
